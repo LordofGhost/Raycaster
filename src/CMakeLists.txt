@@ -1,0 +1,1 @@
+add_executable(Raycaster Main.cpp)
