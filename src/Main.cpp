@@ -10,6 +10,8 @@
 #define RENDER_FOV 60
 #define MOVE_DISTANCE 0.2
 
+static int windowHeight = RENDER_HEIGHT;
+static int windowWidth = RENDER_WIDTH;
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 
@@ -119,12 +121,11 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    if (!SDL_CreateWindowAndRenderer("Raycaster", 640, 480, 0, &window, &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("Raycaster", windowWidth, windowHeight, 0, &window, &renderer)) {
         SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
-
-    //SDL_SetRenderScale(renderer, 10, 10);
+    SDL_SetWindowResizable(window, true);
     player.positionX = 0,player.positionY = 0, player.angle = 0;
 
     return SDL_APP_CONTINUE;
@@ -154,6 +155,12 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
                 player.angle += 0.1;
                 break;
         }
+    }
+
+    if (event->type == SDL_EVENT_WINDOW_RESIZED) {
+        windowWidth = event->window.data1;
+        windowHeight = event->window.data2;
+        SDL_SetRenderScale(renderer,windowWidth / RENDER_WIDTH, windowHeight / RENDER_HEIGHT);
     }
 
     return SDL_APP_CONTINUE;
