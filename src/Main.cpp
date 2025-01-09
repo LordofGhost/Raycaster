@@ -101,10 +101,15 @@ int draw3dSpace(Player player) {
 
     SDL_SetRenderDrawColor(renderer, 255,255,255,255);
     for (int renderColumn = 0; renderColumn < RENDER_WIDTH; renderColumn++) {
+        // calculating the angle of the current column by taking the left most angle and then adding up every already calculated angel
         double angle = (player.angle - (RENDER_FOV * (M_PI / 180.0)) / 2) + (RENDER_FOV * (M_PI / 180.0) / RENDER_WIDTH) * renderColumn;
         double distance = getWallDistance(player.positionX, player.positionY, angle, 16);
 
-        int distanceToHeight = (10 / distance) * 10;
+        // making the height of wall proportional to the screen height, world scale is already 1
+        int distanceToHeight = RENDER_HEIGHT / distance;
+        // Prevent from drawing outside the renderer
+        distanceToHeight > RENDER_HEIGHT ? distanceToHeight = RENDER_HEIGHT : distanceToHeight;
+        // calculating both points by going in the middle of the screen and then go up or down
         int yTop = (RENDER_HEIGHT / 2) - (distanceToHeight / 2);
         int yBottom = (RENDER_HEIGHT / 2) + (distanceToHeight / 2);
         SDL_RenderLine(renderer, renderColumn, yTop, renderColumn, yBottom);
@@ -125,6 +130,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
+
     SDL_SetWindowResizable(window, true);
     player.positionX = 0,player.positionY = 0, player.angle = 0;
 
