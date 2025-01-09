@@ -34,18 +34,34 @@ struct v2D {
 };
 
 int map[8][8] {
-    { 0, 0, 0, 0, 1, 1, 1, 1 },
-    { 0, 0, 0, 0, 0, 0, 0, 1 },
-    { 0, 0, 0, 1, 1, 1, 0, 1 },
-    { 0, 0, 0, 0, 0, 0, 0, 1 },
+    { 1, 1, 1, 1, 1, 1, 1, 1 },
     { 1, 0, 0, 0, 0, 0, 0, 1 },
-    { 1, 0, 0, 0, 1, 1, 0, 1 },
+    { 1, 0, 0, 0, 0, 0, 0, 1 },
+    { 1, 0, 0, 0, 0, 0, 0, 1 },
+    { 1, 0, 0, 0, 0, 0, 0, 1 },
+    { 1, 0, 0, 0, 0, 0, 0, 1 },
     { 1, 0, 0, 0, 0, 0, 0, 1 },
     { 1, 1, 1, 1, 1, 1, 1, 1 },
 };
 
 bool checkForWall(int x, int y) {
+    //if (x < 0 || x > 7 || y < 0 || y > 7) return true;
     return map[y][x] == 1;
+}
+
+int drawMiniMap(Player player) {
+    for (int y = 0; y < 8; y++) {
+        for (int x = 0; x < 8; x++) {
+            if (map[y][x]) {
+                SDL_SetRenderDrawColor(renderer, 0,0,255,255);
+            } else {
+                SDL_SetRenderDrawColor(renderer, 0,100,255,255);
+            }
+            SDL_RenderPoint(renderer, x, y);
+        }
+    }
+    SDL_SetRenderDrawColor(renderer, 255,255,255,255);
+    SDL_RenderPoint(renderer, player.positionX, player.positionY);
 }
 
 double getWallDistance(double x, double y, double angle, int remainChecks) {
@@ -57,7 +73,7 @@ double getWallDistance(double x, double y, double angle, int remainChecks) {
     double yNorm = y - currentCell.y;
 
     /*
-     * calculates the length of the hypotenuse, from the triangle that sits between the normalized coordinate the
+     * calculates the length of the hypotenuse, from the triangle that sits between the normalized coordinate and the
      * border of cell, considering the direction the angle points at
      */
     double xHypo;
@@ -78,7 +94,9 @@ double getWallDistance(double x, double y, double angle, int remainChecks) {
     else
         yHypo = std::numeric_limits<double>::infinity();
 
-    // move the border of the cell where the hypo is lower
+    /*
+     * get the next the cell that the ray cross by moving on x or y axes, depends on where the hypotenuse is shorter
+     */
     if (xHypo < yHypo) {
         x = (cos(angle) >= 0) ? std::floor(x) + 1 : std::floor(x);
         y += std::sin(angle) * xHypo;
@@ -132,7 +150,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     }
 
     SDL_SetWindowResizable(window, true);
-    player.positionX = 0,player.positionY = 0, player.angle = 0;
+    player.positionX = 4,player.positionY = 4, player.angle = 0;
 
     return SDL_APP_CONTINUE;
 }
@@ -163,6 +181,8 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
         }
     }
 
+    std::cout << "Distance: " << getWallDistance(player.positionX, player.positionY, player.angle, 16) << std::endl;
+
     if (event->type == SDL_EVENT_WINDOW_RESIZED) {
         windowWidth = event->window.data1;
         windowHeight = event->window.data2;
@@ -178,6 +198,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     SDL_RenderClear(renderer);
 
     draw3dSpace(player);
+    drawMiniMap(player);
 
     /* put the newly-cleared rendering on the screen. */
     SDL_RenderPresent(renderer);
