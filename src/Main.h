@@ -14,14 +14,19 @@ enum keyCodes {
     D = 100,
 };
 
-struct v2D {
+struct vi2D {
+    int x;
+    int y;
+};
+
+struct vd2D {
     double x;
     double y;
 };
 
 struct Player {
-    v2D pos;
-    v2D dir;
+    vd2D pos;
+    vd2D dir;
 };
 
 #endif //MAIN_H
