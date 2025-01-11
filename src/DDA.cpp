@@ -1,7 +1,31 @@
 #include "DDA.h"
 #include "Main.h"
-
 #include <SDL3/SDL_render.h>
+#include <math.h>
+
+// dismaler for all the math functions: these are not the shortest or most optimized, but they are easy to understand
+
+double getScaleFactor(char axis, v2D dir) {
+    double factor;
+
+    /*
+     * the scaling factor is used to determinate the length of the hypotenuse depending on the move distance on the
+     * axis. In other words this means, you get the actual move distance.
+     */
+    if (axis == 'X') {
+        factor = sqrt(pow(1, 2) + pow(dir.y / dir.x, 2));
+    } else if (axis == 'Y') {
+        factor = sqrt(pow(1, 2) + pow(dir.x / dir.y, 2));
+    }
+
+    return factor;
+}
+
+double dda(Player player) {
+    const double scaleX = getScaleFactor('X', player.dir);
+    const double scaleY = getScaleFactor('Y', player.dir);
+
+}
 
 int draw3dSpace(SDL_Renderer* renderer, Player player) {
 
