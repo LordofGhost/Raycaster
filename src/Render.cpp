@@ -22,7 +22,9 @@ int draw3dSpace(SDL_Renderer* renderer, Player &player) {
         // calculating both points by going in the middle of the screen and then go up or down
         int yTop = (RENDER_HEIGHT / 2) - (distanceToHeight / 2);
         int yBottom = (RENDER_HEIGHT / 2) + (distanceToHeight / 2);
-        SDL_RenderLine(renderer, renderColumn, yTop, renderColumn, yBottom);
+        for (int pixel = yTop; pixel <= yBottom; pixel++) {
+            SDL_RenderPoint(renderer, renderColumn, pixel);
+        }
     }
     return 1;
 }
