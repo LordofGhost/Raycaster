@@ -2,12 +2,12 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#define RENDER_HEIGHT 480
+#define RENDER_HEIGHT 360
 #define RENDER_WIDTH 640
 #define RENDER_FOV 60
 #define MINI_MAP_SCALE 8
-#define MOVE_DISTANCE 0.0002
-#define ROTATE_ANGLE 0.003
+#define MOVE_DISTANCE 0.002
+#define ROTATE_ANGLE 0.001
 
 enum keyCodes {
     W = 119,

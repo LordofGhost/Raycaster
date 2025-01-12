@@ -2,9 +2,9 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h> // needed for callbacks
 #include <SDL3/SDL_events.h>
-#include <math.h>
-#include "Main.h"
+#include <iostream>
 
+#include "Main.h"
 #include "DDA.h"
 #include "Map.h"
 #include "Render.h"
@@ -15,6 +15,9 @@ static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static Player player;
 static KeyState keyState;
+static Uint32 lastFrameTime = 0;
+static int fpsCounter = 0;
+static Uint64 timeLastPrint = 0;
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
@@ -75,24 +78,30 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-    Uint64 timeSinceStart;
-    Uint64 timeLastFrame = timeSinceStart;
-    timeSinceStart = SDL_GetTicks();
-    Uint64 deltaTime = timeSinceStart - timeLastFrame;
+    Uint64 timeSinceStart = timeSinceStart = SDL_GetTicks();
+    Uint64 deltaTime = timeSinceStart - lastFrameTime;
+    lastFrameTime = timeSinceStart;
+
+    fpsCounter++;
+    if ((timeSinceStart - timeLastPrint) >= 1000) {
+        std::cout << "FPS: " << fpsCounter << std::endl;
+        timeLastPrint = timeSinceStart;
+        fpsCounter = 0;
+    }
 
     if (keyState.w) {
-        player.pos.y += player.dir.y * MOVE_DISTANCE * (deltaTime / 1000);
-        player.pos.x += player.dir.x * MOVE_DISTANCE * (deltaTime / 1000);
+        player.pos.y += player.dir.y * MOVE_DISTANCE * deltaTime;
+        player.pos.x += player.dir.x * MOVE_DISTANCE * deltaTime;
     }
     if (keyState.a) {
-        player.dir = rotateVector(player.dir, -ROTATE_ANGLE);
+        player.dir = rotateVector(player.dir, -ROTATE_ANGLE * deltaTime);
     }
     if (keyState.s) {
         player.pos.y -= player.dir.y * MOVE_DISTANCE * deltaTime;
         player.pos.x -= player.dir.x * MOVE_DISTANCE * deltaTime;
     }
     if (keyState.d) {
-        player.dir = rotateVector(player.dir, ROTATE_ANGLE);
+        player.dir = rotateVector(player.dir, ROTATE_ANGLE * deltaTime);
     }
 
     draw3dSpace(renderer, player);
