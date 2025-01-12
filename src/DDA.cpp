@@ -77,3 +77,19 @@ double dda(vd2D pos, vd2D dir, int &mapTileInformation) {
 
     return traveledDistance;
 }
+
+vd2D rotateVector(vd2D vec, double angle) {
+    vd2D rotatedVec;
+    rotatedVec.x = (cos(angle) * vec.x) + (-sin(angle) * vec.y);
+    rotatedVec.y = (sin(angle) * vec.x) + (cos(angle) * vec.y);
+    return rotatedVec;
+}
+
+double getRadFromVector(vd2D vec) {
+    double rad = tan(vec.y/vec.x);
+    return rad;
+}
+
+double degreeToRad(double degree) {
+    return degree * (M_PI / 180);
+}

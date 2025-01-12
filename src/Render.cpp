@@ -1,26 +1,17 @@
 #include "Render.h"
 #include "DDA.h"
 #include "Map.h"
+#include "math.h"
 
 int draw3dSpace(SDL_Renderer* renderer, Player &player) {
     for (int renderColumn = 0; renderColumn < RENDER_WIDTH; renderColumn++) {
-        /*
-         * all the camera variables are absolute values to the grid
-         * the cameraPlane is a vector that starts at left corner of camera and ends at the right corner
-         * the cameraPos is the coordinate of the left corner of the camera
-         */
-        vd2D cameraPlane = {player.dir.y * 2, player.dir.x * 2};
-        vd2D cameraPos = {player.pos.x - (cameraPlane.x * 0.5), player.pos.y - (cameraPlane.y * 0.5)};
-
-        /*
-         * all the column variables are relative to the camera position
-         */
-        double columnStepSizeOnCameraPlane = 1 / (double)RENDER_WIDTH;
-        double columnPosOnCameraPlane = columnStepSizeOnCameraPlane * renderColumn;
-        vd2D columnPos = {cameraPos.x + (cameraPlane.x * columnPosOnCameraPlane), cameraPos.y + (cameraPlane.y * columnPosOnCameraPlane)};
+        double columnStepSize = (double)RENDER_FOV / (double)RENDER_WIDTH;
+        double columnAngle = (columnStepSize * renderColumn) - (RENDER_FOV / 2);
+        vd2D columnDirection = rotateVector(player.dir, degreeToRad(columnAngle));
+        double angleDifference = abs(degreeToRad(columnAngle));
 
         int tileColor;
-        double wallDistance = dda(columnPos, player.dir, tileColor);
+        double wallDistance = dda(player.pos, columnDirection, tileColor) * cos(angleDifference);
         if (tileColor != 0) setRenderColor(renderer, tileColor); else continue; // skip column if, it is out of map
 
         // making the height of wall proportional to the screen height, world scale is already 1
@@ -47,6 +38,10 @@ int drawMiniMap(SDL_Renderer* renderer, Player &player) {
             SDL_RenderFillRect(renderer, &rect);
         }
     }
+    int tileInfo;
+    double distance = dda(player.pos, player.dir, tileInfo);
+    SDL_SetRenderDrawColor(renderer, 255,200,255,255);
+    SDL_RenderLine(renderer, player.pos.x * MINI_MAP_SCALE, player.pos.y * MINI_MAP_SCALE, (player.pos.x + (player.dir.x * distance)) * MINI_MAP_SCALE, (player.pos.y + (player.dir.y * distance)) * MINI_MAP_SCALE);
     SDL_SetRenderDrawColor(renderer, 255,255,255,255);
     SDL_RenderPoint(renderer, player.pos.x * MINI_MAP_SCALE, player.pos.y * MINI_MAP_SCALE);
     return 1;
