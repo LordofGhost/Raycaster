@@ -1,14 +1,11 @@
 #include "DDA.h"
-#include "Main.h"
 #include "Map.h"
-#include <SDL3/SDL_render.h>
 #include <math.h>
 
 // dismaler for all the math functions: these are not the shortest or most optimized, but they are easy to understand
 
 double getScaleFactor(char axis, vd2D dir) {
     double factor;
-
     /*
      * the scaling factor is used to determinate the length of the hypotenuse depending on the move distance on the
      * axis. In other words this means, you get the actual move distance.
@@ -22,10 +19,10 @@ double getScaleFactor(char axis, vd2D dir) {
     return factor;
 }
 
-double dda(Player player, int* mapTileInformation) {
-    vi2D mapTile = {(int) player.pos.x, (int) player.pos.y};
-    const double scaleX = getScaleFactor('X', player.dir);
-    const double scaleY = getScaleFactor('Y', player.dir);
+double dda(vd2D pos, vd2D dir, int &mapTileInformation) {
+    vi2D mapTile = {(int) pos.x, (int) pos.y};
+    const double scaleX = getScaleFactor('X', dir);
+    const double scaleY = getScaleFactor('Y', dir);
 
     vi2D rayDirection;
     vd2D rayLength;
@@ -34,23 +31,23 @@ double dda(Player player, int* mapTileInformation) {
     /*
      * this termite the distance to the border of the tile in the direction the vector points
      */
-    if (player.dir.x > 0) {
+    if (dir.x > 0) {
         // the vector points to the right
         rayDirection.x = 1;
-        rayLength.x = (1 - (player.pos.x - mapTile.x)) * scaleX;
+        rayLength.x = (1 - (pos.x - mapTile.x)) * scaleX;
     } else {
         // the vector points to the left
         rayDirection.x = -1;
-        rayLength.x = (player.pos.x - mapTile.x) * scaleX;
+        rayLength.x = (pos.x - mapTile.x) * scaleX;
     }
-    if (player.dir.y > 0) {
+    if (dir.y > 0) {
         // the vector points upwards
         rayDirection.y = 1;
-        rayLength.y = (player.pos.y - mapTile.y) * scaleY;
+        rayLength.y = (pos.y - mapTile.y) * scaleY;
     } else {
         // the vector points downwards
         rayDirection.y = -1;
-        rayLength.y = (1 - (player.pos.y - mapTile.y)) * scaleY;
+        rayLength.y = (1 - (pos.y - mapTile.y)) * scaleY;
     }
 
     int maxDistance = getMapMaxDistance(); // limits the calculating distance
@@ -75,27 +72,8 @@ double dda(Player player, int* mapTileInformation) {
             rayLength.y += 1 * scaleY;
         }
 
-        if ((*mapTileInformation = getTileInfo(mapTile)) != 0) hitWall = true;
+        if ((mapTileInformation = getTileInfo(mapTile)) != 0) hitWall = true;
     }
 
     return traveledDistance;
-}
-
-int draw3dSpace(SDL_Renderer* renderer, Player player) {
-
-    SDL_SetRenderDrawColor(renderer, 255,255,255,255);
-    for (int renderColumn = 0; renderColumn < RENDER_WIDTH; renderColumn++) {
-        int* tileColor;
-        double wallDistance = dda(player, tileColor);
-
-        // making the height of wall proportional to the screen height, world scale is already 1
-        int distanceToHeight = RENDER_HEIGHT / wallDistance;
-        // Prevent from drawing outside the renderer
-        distanceToHeight > RENDER_HEIGHT ? distanceToHeight = RENDER_HEIGHT : distanceToHeight;
-        // calculating both points by going in the middle of the screen and then go up or down
-        int yTop = (RENDER_HEIGHT / 2) - (distanceToHeight / 2);
-        int yBottom = (RENDER_HEIGHT / 2) + (distanceToHeight / 2);
-        SDL_RenderLine(renderer, renderColumn, yTop, renderColumn, yBottom);
-    }
-    return 1;
 }

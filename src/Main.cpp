@@ -4,12 +4,13 @@
 #include <SDL3/SDL_events.h>
 #include "Main.h"
 #include "Map.h"
-#include "DDA.h"
+#include "Render.h"
 
 static int windowHeight = RENDER_HEIGHT;
 static int windowWidth = RENDER_WIDTH;
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
+static Player player;
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
@@ -26,6 +27,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     }
 
     SDL_SetWindowResizable(window, true);
+
+    setStartingPoint(player);
 
     return SDL_APP_CONTINUE;
 }
@@ -63,6 +66,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
+
+    draw3dSpace(renderer, player);
+    drawMiniMap(renderer, player);
 
     /* put the newly-cleared rendering on the screen. */
     SDL_RenderPresent(renderer);

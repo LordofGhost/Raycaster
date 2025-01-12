@@ -5,7 +5,7 @@
 #include "Main.h"
 
 double getScaleFactor(char axis, vd2D dir);
-double dda(Player player, int* mapTileInformation);
+double dda(vd2D pos, vd2D dir, int &mapTileInformation);
 
 
 #endif //DDA_H

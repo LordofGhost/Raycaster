@@ -3,4 +3,6 @@ add_executable(Raycaster Main.cpp
         DDA.h
         Map.cpp
         Map.h
-        Main.h)
+        Main.h
+        Render.cpp
+        Render.h)
