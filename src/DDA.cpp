@@ -41,13 +41,13 @@ double dda(vd2D pos, vd2D dir, int &mapTileInformation) {
         rayLength.x = (pos.x - mapTile.x) * scaleX;
     }
     if (dir.y > 0) {
-        // the vector points upwards
-        rayDirection.y = 1;
-        rayLength.y = (pos.y - mapTile.y) * scaleY;
-    } else {
         // the vector points downwards
-        rayDirection.y = -1;
+        rayDirection.y = 1;
         rayLength.y = (1 - (pos.y - mapTile.y)) * scaleY;
+    } else {
+        // the vector points upwards
+        rayDirection.y = -1;
+        rayLength.y = (pos.y - mapTile.y) * scaleY;
     }
 
     int maxDistance = getMapMaxDistance(); // limits the calculating distance

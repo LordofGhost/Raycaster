@@ -15,14 +15,13 @@ int draw3dSpace(SDL_Renderer* renderer, Player &player) {
         /*
          * all the column variables are relative to the camera position
          */
-        double columnStepSizeOnCameraPlane = 1 / RENDER_WIDTH;
+        double columnStepSizeOnCameraPlane = 1 / (double)RENDER_WIDTH;
         double columnPosOnCameraPlane = columnStepSizeOnCameraPlane * renderColumn;
         vd2D columnPos = {cameraPos.x + (cameraPlane.x * columnPosOnCameraPlane), cameraPos.y + (cameraPlane.y * columnPosOnCameraPlane)};
 
         int tileColor;
         double wallDistance = dda(columnPos, player.dir, tileColor);
         if (tileColor != 0) setRenderColor(renderer, tileColor); else continue; // skip column if, it is out of map
-
 
         // making the height of wall proportional to the screen height, world scale is already 1
         int distanceToHeight = RENDER_HEIGHT / wallDistance;
