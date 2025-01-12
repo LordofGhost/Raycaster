@@ -6,6 +6,7 @@
 
 int getTileInfo(vi2D);
 int getMapMaxDistance();
+vi2D getMatrixDimension();
 void setStartingPoint(Player&);
 
 

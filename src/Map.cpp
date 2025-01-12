@@ -21,6 +21,12 @@ int getMapMaxDistance() {
     return sizeof(map) / 4;
 }
 
+vi2D getMatrixDimension() {
+    int rows = sizeof(map) / sizeof(map[0]);
+    int cols = sizeof(map[0]) / sizeof(map[0][0]);
+    return {cols, rows};
+}
+
 void setStartingPoint(Player &player) {
     player = startingPoint;
 }

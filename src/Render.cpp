@@ -5,14 +5,15 @@
 
 int draw3dSpace(SDL_Renderer* renderer, Player &player) {
     for (int renderColumn = 0; renderColumn < RENDER_WIDTH; renderColumn++) {
+        // these variables determinate the direction of the ray for the current column
         double columnStepSize = (double)RENDER_FOV / (double)RENDER_WIDTH;
         double columnAngle = (columnStepSize * renderColumn) - (RENDER_FOV / 2);
         vd2D columnDirection = rotateVector(player.dir, degreeToRad(columnAngle));
         double angleDifference = abs(degreeToRad(columnAngle));
 
-        int tileColor;
-        bool shadowSide;
-        double wallDistance = dda(player.pos, columnDirection, tileColor, shadowSide) * cos(angleDifference);
+        int tileColor; // color of the hit wall
+        bool shadowSide; // create a shadow effect on wall that face the y-axis
+        double wallDistance = dda(player.pos, columnDirection, tileColor, shadowSide) * cos(angleDifference); // the cos value is needed to remove the fisheye effect
         if (tileColor != 0) setRenderColor(renderer, tileColor, shadowSide); else continue; // skip column if, it is out of map
 
         // making the height of wall proportional to the screen height, world scale is already 1
@@ -22,6 +23,7 @@ int draw3dSpace(SDL_Renderer* renderer, Player &player) {
         // calculating both points by going in the middle of the screen and then go up or down
         int yTop = (RENDER_HEIGHT / 2) - (distanceToHeight / 2);
         int yBottom = (RENDER_HEIGHT / 2) + (distanceToHeight / 2);
+        // loop over all pixel on the column that belong to the wall
         for (int pixel = yTop; pixel <= yBottom; pixel++) {
             SDL_RenderPoint(renderer, renderColumn, pixel);
         }
@@ -30,8 +32,10 @@ int draw3dSpace(SDL_Renderer* renderer, Player &player) {
 }
 
 int drawMiniMap(SDL_Renderer* renderer, Player &player) {
-    for (int y = 0; y < 8; y++) {
-        for (int x = 0; x < 8; x++) {
+    // get dimension, then loop over the array
+    vi2D mapDimensions = getMatrixDimension();
+    for (int y = 0; y < mapDimensions.y; y++) {
+        for (int x = 0; x < mapDimensions.x; x++) {
             setRenderColor(renderer, getTileInfo({x, y}), false);
             SDL_FRect rect;
             rect.x = x * MINI_MAP_SCALE;
@@ -41,11 +45,15 @@ int drawMiniMap(SDL_Renderer* renderer, Player &player) {
             SDL_RenderFillRect(renderer, &rect);
         }
     }
+
+    // draw line where the player looks at and end the line on the first wall
     int tileInfo;
     bool shadowSide;
     double distance = dda(player.pos, player.dir, tileInfo, shadowSide);
     SDL_SetRenderDrawColor(renderer, 100, 100,100,255);
     SDL_RenderLine(renderer, player.pos.x * MINI_MAP_SCALE, player.pos.y * MINI_MAP_SCALE, (player.pos.x + (player.dir.x * distance)) * MINI_MAP_SCALE, (player.pos.y + (player.dir.y * distance)) * MINI_MAP_SCALE);
+
+    // draw player position to the mini map
     SDL_SetRenderDrawColor(renderer, 255,255,255,255);
     SDL_RenderPoint(renderer, player.pos.x * MINI_MAP_SCALE, player.pos.y * MINI_MAP_SCALE);
     return 1;

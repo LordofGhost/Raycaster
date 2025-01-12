@@ -17,7 +17,7 @@ static Player player;
 static KeyState keyState;
 static Uint32 lastFrameTime = 0;
 static int fpsCounter = 0;
-static Uint64 timeLastPrint = 0;
+static Uint64 timeLastPrintFPSCounter = 0;
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
@@ -47,6 +47,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
         return SDL_APP_SUCCESS;  // end the program, reporting success to the OS
     }
 
+    // control movement
     if (event->type == SDL_EVENT_KEY_DOWN || event->type == SDL_EVENT_KEY_UP) {
         switch (event->key.key) {
             case W:
@@ -64,6 +65,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
         }
     }
 
+    // scale the window on resize
     if (event->type == SDL_EVENT_WINDOW_RESIZED) {
         windowWidth = event->window.data1;
         windowHeight = event->window.data2;
@@ -83,13 +85,14 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     lastFrameTime = timeSinceStart;
 
     fpsCounter++;
-    if ((timeSinceStart - timeLastPrint) >= 1000) {
+    if ((timeSinceStart - timeLastPrintFPSCounter) >= 1000) {
         std::cout << "FPS: " << fpsCounter << std::endl;
-        timeLastPrint = timeSinceStart;
+        timeLastPrintFPSCounter = timeSinceStart;
         fpsCounter = 0;
     }
 
     if (keyState.w) {
+        // try to move the player, before apply the new coordinates, check if there is a wall
         double newPosY = player.pos.y + player.dir.y * MOVE_DISTANCE * deltaTime;
         double newPosX = player.pos.x + player.dir.x * MOVE_DISTANCE * deltaTime;
         if (getTileInfo({(int)newPosX,(int) newPosY}) == 0) {
@@ -98,6 +101,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         }
     }
     if (keyState.a) {
+        // rotate camera to the right
         player.dir = rotateVector(player.dir, -ROTATE_ANGLE * deltaTime);
     }
     if (keyState.s) {
@@ -109,6 +113,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         }
     }
     if (keyState.d) {
+        // rotate camera to the left;
         player.dir = rotateVector(player.dir, ROTATE_ANGLE * deltaTime);
     }
 
