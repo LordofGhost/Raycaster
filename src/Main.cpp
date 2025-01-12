@@ -90,15 +90,23 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     }
 
     if (keyState.w) {
-        player.pos.y += player.dir.y * MOVE_DISTANCE * deltaTime;
-        player.pos.x += player.dir.x * MOVE_DISTANCE * deltaTime;
+        double newPosY = player.pos.y + player.dir.y * MOVE_DISTANCE * deltaTime;
+        double newPosX = player.pos.x + player.dir.x * MOVE_DISTANCE * deltaTime;
+        if (getTileInfo({(int)newPosX,(int) newPosY}) == 0) {
+            player.pos.x = newPosX;
+            player.pos.y = newPosY;
+        }
     }
     if (keyState.a) {
         player.dir = rotateVector(player.dir, -ROTATE_ANGLE * deltaTime);
     }
     if (keyState.s) {
-        player.pos.y -= player.dir.y * MOVE_DISTANCE * deltaTime;
-        player.pos.x -= player.dir.x * MOVE_DISTANCE * deltaTime;
+        double newPosY = player.pos.y - player.dir.y * MOVE_DISTANCE * deltaTime;
+        double newPosX = player.pos.x - player.dir.x * MOVE_DISTANCE * deltaTime;
+        if (getTileInfo({(int)newPosX,(int) newPosY}) == 0) {
+            player.pos.x = newPosX;
+            player.pos.y = newPosY;
+        }
     }
     if (keyState.d) {
         player.dir = rotateVector(player.dir, ROTATE_ANGLE * deltaTime);
