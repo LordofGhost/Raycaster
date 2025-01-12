@@ -19,7 +19,7 @@ double getScaleFactor(char axis, vd2D dir) {
     return factor;
 }
 
-double dda(vd2D pos, vd2D dir, int &mapTileInformation) {
+double dda(vd2D pos, vd2D dir, int &mapTileInformation, bool &shadowSide) {
     vi2D mapTile = {(int) pos.x, (int) pos.y};
     const double scaleX = getScaleFactor('X', dir);
     const double scaleY = getScaleFactor('Y', dir);
@@ -66,10 +66,12 @@ double dda(vd2D pos, vd2D dir, int &mapTileInformation) {
              */
             traveledDistance = rayLength.x;
             rayLength.x += 1 * scaleX; // extend ray for check in next loop cycle
+            shadowSide = true;
         } else {
             mapTile.y += rayDirection.y;
             traveledDistance = rayLength.y;
             rayLength.y += 1 * scaleY;
+            shadowSide = false;
         }
 
         if ((mapTileInformation = getTileInfo(mapTile)) != 0) hitWall = true;
