@@ -5,6 +5,7 @@
 #define RENDER_HEIGHT 480
 #define RENDER_WIDTH 640
 #define RENDER_FOV 60
+#define MINI_MAP_SCALE 8
 #define MOVE_DISTANCE 0.2
 #define ROTATE_ANGLE 0.1
 

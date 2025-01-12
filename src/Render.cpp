@@ -21,19 +21,8 @@ int draw3dSpace(SDL_Renderer* renderer, Player &player) {
 
         int tileColor;
         double wallDistance = dda(columnPos, player.dir, tileColor);
-        switch (tileColor) {
-            case 1:
-                SDL_SetRenderDrawColor(renderer, 255,0,0,255);
-                break;
-            case 2:
-                SDL_SetRenderDrawColor(renderer, 0,255,0,255);
-            break;
-            case 3:
-                SDL_SetRenderDrawColor(renderer, 0,0,255,255);
-            break;
-            case 0:
-                continue; // skip column if, it is out of map
-        }
+        if (tileColor != 0) setRenderColor(renderer, tileColor); else continue; // skip column if, it is out of map
+
 
         // making the height of wall proportional to the screen height, world scale is already 1
         int distanceToHeight = RENDER_HEIGHT / wallDistance;
@@ -50,15 +39,33 @@ int draw3dSpace(SDL_Renderer* renderer, Player &player) {
 int drawMiniMap(SDL_Renderer* renderer, Player &player) {
     for (int y = 0; y < 8; y++) {
         for (int x = 0; x < 8; x++) {
-            if (getTileInfo({x, y}) != 0) {
-                SDL_SetRenderDrawColor(renderer, 0,0,255,255);
-            } else {
-                SDL_SetRenderDrawColor(renderer, 0,100,255,255);
-            }
-            SDL_RenderPoint(renderer, x, y);
+            setRenderColor(renderer, getTileInfo({x, y}));
+            SDL_FRect rect;
+            rect.x = x * MINI_MAP_SCALE;
+            rect.y = y * MINI_MAP_SCALE;
+            rect.w = MINI_MAP_SCALE;
+            rect.h = MINI_MAP_SCALE;
+            SDL_RenderFillRect(renderer, &rect);
         }
     }
     SDL_SetRenderDrawColor(renderer, 255,255,255,255);
-    SDL_RenderPoint(renderer, player.pos.x, player.pos.y);
+    SDL_RenderPoint(renderer, player.pos.x * MINI_MAP_SCALE, player.pos.y * MINI_MAP_SCALE);
     return 1;
+}
+
+void setRenderColor(SDL_Renderer* renderer, int tileColor) {
+    switch (tileColor) {
+        case 0:
+            SDL_SetRenderDrawColor(renderer, 0,0,0,255);
+            break;
+        case 1:
+            SDL_SetRenderDrawColor(renderer, 255,0,0,255);
+        break;
+        case 2:
+            SDL_SetRenderDrawColor(renderer, 0,255,0,255);
+        break;
+        case 3:
+            SDL_SetRenderDrawColor(renderer, 0,0,255,255);
+        break;
+    }
 }

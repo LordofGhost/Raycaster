@@ -4,9 +4,6 @@
 #include <SDL3/SDL_events.h>
 #include <math.h>
 #include "Main.h"
-
-#include <iostream>
-
 #include "Map.h"
 #include "Render.h"
 
@@ -64,7 +61,6 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
                 player.dir.y = (sin(ROTATE_ANGLE) * oldDirX) + (cos(ROTATE_ANGLE) * player.dir.y);
                 break;
         }
-        std::cout << player.dir.x << " " << player.dir.y << std::endl;
     }
 
     if (event->type == SDL_EVENT_WINDOW_RESIZED) {
