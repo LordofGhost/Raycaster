@@ -42,7 +42,7 @@ int drawMiniMap(SDL_Renderer* renderer, Player &player) {
     int tileInfo;
     bool shadowSide;
     double distance = dda(player.pos, player.dir, tileInfo, shadowSide);
-    SDL_SetRenderDrawColor(renderer, 255,200,255,255);
+    SDL_SetRenderDrawColor(renderer, 100, 100,100,255);
     SDL_RenderLine(renderer, player.pos.x * MINI_MAP_SCALE, player.pos.y * MINI_MAP_SCALE, (player.pos.x + (player.dir.x * distance)) * MINI_MAP_SCALE, (player.pos.y + (player.dir.y * distance)) * MINI_MAP_SCALE);
     SDL_SetRenderDrawColor(renderer, 255,255,255,255);
     SDL_RenderPoint(renderer, player.pos.x * MINI_MAP_SCALE, player.pos.y * MINI_MAP_SCALE);

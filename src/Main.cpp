@@ -4,6 +4,8 @@
 #include <SDL3/SDL_events.h>
 #include <math.h>
 #include "Main.h"
+
+#include "DDA.h"
 #include "Map.h"
 #include "Render.h"
 
@@ -12,6 +14,7 @@ static int windowWidth = RENDER_WIDTH;
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static Player player;
+static KeyState keyState;
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
@@ -41,24 +44,19 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
         return SDL_APP_SUCCESS;  // end the program, reporting success to the OS
     }
 
-    if (event->type == SDL_EVENT_KEY_DOWN) {
-        double oldDirX = player.dir.x;
+    if (event->type == SDL_EVENT_KEY_DOWN || event->type == SDL_EVENT_KEY_UP) {
         switch (event->key.key) {
             case W:
-                player.pos.y += player.dir.y * MOVE_DISTANCE;
-                player.pos.x += player.dir.x * MOVE_DISTANCE;
+                event->type == SDL_EVENT_KEY_DOWN ? keyState.w = true : keyState.w = false;
                 break;
             case A:
-                player.dir.x = (cos(-ROTATE_ANGLE) * player.dir.x) + (-sin(-ROTATE_ANGLE) * player.dir.y);
-                player.dir.y = (sin(-ROTATE_ANGLE) * oldDirX) + (cos(-ROTATE_ANGLE) * player.dir.y);
+                event->type == SDL_EVENT_KEY_DOWN ? keyState.a = true : keyState.a = false;
                 break;
             case S:
-                player.pos.y -= player.dir.y * MOVE_DISTANCE;
-                player.pos.x -= player.dir.x * MOVE_DISTANCE;
+                event->type == SDL_EVENT_KEY_DOWN ? keyState.s = true : keyState.s = false;
                 break;
             case D:
-                player.dir.x = (cos(ROTATE_ANGLE) * player.dir.x) + (-sin(ROTATE_ANGLE) * player.dir.y);
-                player.dir.y = (sin(ROTATE_ANGLE) * oldDirX) + (cos(ROTATE_ANGLE) * player.dir.y);
+                event->type == SDL_EVENT_KEY_DOWN ? keyState.d = true : keyState.d = false;
                 break;
         }
     }
@@ -76,6 +74,26 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
+
+    Uint64 timeSinceStart;
+    Uint64 timeLastFrame = timeSinceStart;
+    timeSinceStart = SDL_GetTicks();
+    Uint64 deltaTime = timeSinceStart - timeLastFrame;
+
+    if (keyState.w) {
+        player.pos.y += player.dir.y * MOVE_DISTANCE * (deltaTime / 1000);
+        player.pos.x += player.dir.x * MOVE_DISTANCE * (deltaTime / 1000);
+    }
+    if (keyState.a) {
+        player.dir = rotateVector(player.dir, -ROTATE_ANGLE);
+    }
+    if (keyState.s) {
+        player.pos.y -= player.dir.y * MOVE_DISTANCE * deltaTime;
+        player.pos.x -= player.dir.x * MOVE_DISTANCE * deltaTime;
+    }
+    if (keyState.d) {
+        player.dir = rotateVector(player.dir, ROTATE_ANGLE);
+    }
 
     draw3dSpace(renderer, player);
     drawMiniMap(renderer, player);
