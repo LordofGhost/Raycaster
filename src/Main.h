@@ -6,6 +6,7 @@
 #define RENDER_WIDTH 640
 #define RENDER_FOV 60
 #define MOVE_DISTANCE 0.2
+#define ROTATE_ANGLE 0.1
 
 enum keyCodes {
     W = 119,

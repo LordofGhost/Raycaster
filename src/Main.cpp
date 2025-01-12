@@ -2,7 +2,11 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h> // needed for callbacks
 #include <SDL3/SDL_events.h>
+#include <math.h>
 #include "Main.h"
+
+#include <iostream>
+
 #include "Map.h"
 #include "Render.h"
 
@@ -41,16 +45,26 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     }
 
     if (event->type == SDL_EVENT_KEY_DOWN) {
+        double oldDirX = player.dir.x;
         switch (event->key.key) {
             case W:
+                player.pos.y += player.dir.y * MOVE_DISTANCE;
+                player.pos.x += player.dir.x * MOVE_DISTANCE;
                 break;
             case A:
+                player.dir.x = (cos(-ROTATE_ANGLE) * player.dir.x) + (-sin(-ROTATE_ANGLE) * player.dir.y);
+                player.dir.y = (sin(-ROTATE_ANGLE) * oldDirX) + (cos(-ROTATE_ANGLE) * player.dir.y);
                 break;
             case S:
+                player.pos.y -= player.dir.y * MOVE_DISTANCE;
+                player.pos.x -= player.dir.x * MOVE_DISTANCE;
                 break;
             case D:
+                player.dir.x = (cos(ROTATE_ANGLE) * player.dir.x) + (-sin(ROTATE_ANGLE) * player.dir.y);
+                player.dir.y = (sin(ROTATE_ANGLE) * oldDirX) + (cos(ROTATE_ANGLE) * player.dir.y);
                 break;
         }
+        std::cout << player.dir.x << " " << player.dir.y << std::endl;
     }
 
     if (event->type == SDL_EVENT_WINDOW_RESIZED) {

@@ -3,13 +3,37 @@
 #include "Map.h"
 
 int draw3dSpace(SDL_Renderer* renderer, Player &player) {
-
-    SDL_SetRenderDrawColor(renderer, 255,255,255,255);
     for (int renderColumn = 0; renderColumn < RENDER_WIDTH; renderColumn++) {
-        // TODO create direction vector that rotates with the for loop
+        /*
+         * all the camera variables are absolute values to the grid
+         * the cameraPlane is a vector that starts at left corner of camera and ends at the right corner
+         * the cameraPos is the coordinate of the left corner of the camera
+         */
+        vd2D cameraPlane = {player.dir.y * 2, player.dir.x * 2};
+        vd2D cameraPos = {player.pos.x - (cameraPlane.x * 0.5), player.pos.y - (cameraPlane.y * 0.5)};
+
+        /*
+         * all the column variables are relative to the camera position
+         */
+        double columnStepSizeOnCameraPlane = 1 / RENDER_WIDTH;
+        double columnPosOnCameraPlane = columnStepSizeOnCameraPlane * renderColumn;
+        vd2D columnPos = {cameraPos.x + (cameraPlane.x * columnPosOnCameraPlane), cameraPos.y + (cameraPlane.y * columnPosOnCameraPlane)};
+
         int tileColor;
-        double wallDistance = dda(player.pos, dir, tileColor);
-        if (tileColor == 0) continue; // skip column if, it is out of map
+        double wallDistance = dda(columnPos, player.dir, tileColor);
+        switch (tileColor) {
+            case 1:
+                SDL_SetRenderDrawColor(renderer, 255,0,0,255);
+                break;
+            case 2:
+                SDL_SetRenderDrawColor(renderer, 0,255,0,255);
+            break;
+            case 3:
+                SDL_SetRenderDrawColor(renderer, 0,0,255,255);
+            break;
+            case 0:
+                continue; // skip column if, it is out of map
+        }
 
         // making the height of wall proportional to the screen height, world scale is already 1
         int distanceToHeight = RENDER_HEIGHT / wallDistance;
