@@ -80,7 +80,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-    Uint64 timeSinceStart = timeSinceStart = SDL_GetTicks();
+    Uint64 timeSinceStart = SDL_GetTicks();
     Uint64 deltaTime = timeSinceStart - lastFrameTime;
     lastFrameTime = timeSinceStart;
 

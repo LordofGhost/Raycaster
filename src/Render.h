@@ -8,6 +8,6 @@
 
 int draw3dSpace(SDL_Renderer* renderer, Player &player);
 int drawMiniMap(SDL_Renderer* renderer, Player &player);
-void setRenderColor(SDL_Renderer* renderer, int tileColor, bool shadow);
+void setRenderColor(SDL_Renderer* renderer, int tileTextureID, double pos, bool shadow);
 
 #endif //RENDER_H

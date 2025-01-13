@@ -6,10 +6,8 @@
 
 double getScaleFactor(char axis, vd2D dir) {
     double factor;
-    /*
-     * the scaling factor is used to determinate the length of the hypotenuse depending on the move distance on the
-     * axis. In other words this means, you get the actual move distance.
-     */
+    /* the scaling factor is used to determinate the length of the hypotenuse depending on the move distance on the
+     * axis. In other words this means, you get the actual move distance. */
     if (axis == 'X') {
         factor = sqrt(pow(1, 2) + pow(dir.y / dir.x, 2));
     } else if (axis == 'Y') {
@@ -19,7 +17,7 @@ double getScaleFactor(char axis, vd2D dir) {
     return factor;
 }
 
-double dda(vd2D pos, vd2D dir, int &mapTileInformation, bool &shadowSide) {
+double dda(vd2D pos, vd2D dir, int &mapTileInformation, bool &hitOnAxisX) {
     vi2D mapTile = {(int) pos.x, (int) pos.y};
     const double scaleX = getScaleFactor('X', dir);
     const double scaleY = getScaleFactor('Y', dir);
@@ -28,9 +26,7 @@ double dda(vd2D pos, vd2D dir, int &mapTileInformation, bool &shadowSide) {
     vd2D rayLength;
     double traveledDistance;
 
-    /*
-     * this termite the distance to the border of the tile in the direction the vector points
-     */
+    // this termite the distance to the border of the tile in the direction the vector points
     if (dir.x > 0) {
         // the vector points to the right
         rayDirection.x = 1;
@@ -52,26 +48,23 @@ double dda(vd2D pos, vd2D dir, int &mapTileInformation, bool &shadowSide) {
 
     int maxDistance = getMapMaxDistance(); // limits the calculating distance
     bool hitWall = false;
-    /*
-     * the loop terminates when a wall is hit or the distance is bigger than on the map possible
-     */
+
+    // the loop terminates when a wall is hit or the distance is bigger than on the map possible
     while(!hitWall && traveledDistance < maxDistance) {
         // decide which ray is shorter and then increment on that axis
         if (rayLength.x < rayLength.y) {
             mapTile.x += rayDirection.x; // update tile
-            /*
-             * traveledDistance:
+            /* traveledDistance:
              * all steps added together, in this case it is not important on which axis previously was traveled on,
-             * because when this ray is the shorter one, it includes the current move all prior moves
-             */
+             * because when this ray is the shorter one, it includes the current move all prior moves */
             traveledDistance = rayLength.x;
             rayLength.x += 1 * scaleX; // extend ray for check in next loop cycle
-            shadowSide = true;
+            hitOnAxisX = true;
         } else {
             mapTile.y += rayDirection.y;
             traveledDistance = rayLength.y;
             rayLength.y += 1 * scaleY;
-            shadowSide = false;
+            hitOnAxisX = false;
         }
 
         if ((mapTileInformation = getTileInfo(mapTile)) != 0) hitWall = true;
