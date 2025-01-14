@@ -17,6 +17,7 @@ int draw3dSpace(SDL_Renderer* renderer, Player &player) {
         double wallDistance = dda(player.pos, columnDirection, tileColor, hitOnAxisX);
         double wallDistanceNoFishEye =  wallDistance * cos(angleDifference); // the cos value is needed to remove the fisheye effect
 
+        // calculate the position where the ray hits the wall to correctly map the texture
         double wallHitPosition;
         if (hitOnAxisX) {
             // the wall goes along the x-axis

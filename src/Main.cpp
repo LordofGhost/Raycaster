@@ -92,12 +92,11 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     }
 
     if (keyState.w) {
-        // try to move the player, before apply the new coordinates, check if there is a wall
-        double newPosY = player.pos.y + player.dir.y * MOVE_DISTANCE * deltaTime;
-        double newPosX = player.pos.x + player.dir.x * MOVE_DISTANCE * deltaTime;
-        if (getTileInfo({(int)newPosX,(int) newPosY}) == 0) {
-            player.pos.x = newPosX;
-            player.pos.y = newPosY;
+        if (getTileInfo({(int) (player.pos.x + PLAYER_COLLISION_RADIUS * (player.dir.x >= 0 ? 1 : -1)),(int) player.pos.y}) == 0) {
+            player.pos.x = player.pos.x + player.dir.x * MOVE_DISTANCE * deltaTime;
+        }
+        if (getTileInfo({(int) player.pos.x,(int) (player.pos.y + PLAYER_COLLISION_RADIUS * (player.dir.y >= 0 ? 1 : -1))}) == 0) {
+            player.pos.y = player.pos.y + player.dir.y * MOVE_DISTANCE * deltaTime;
         }
     }
     if (keyState.a) {
@@ -105,11 +104,11 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         player.dir = rotateVector(player.dir, -ROTATE_ANGLE * deltaTime);
     }
     if (keyState.s) {
-        double newPosY = player.pos.y - player.dir.y * MOVE_DISTANCE * deltaTime;
-        double newPosX = player.pos.x - player.dir.x * MOVE_DISTANCE * deltaTime;
-        if (getTileInfo({(int)newPosX,(int) newPosY}) == 0) {
-            player.pos.x = newPosX;
-            player.pos.y = newPosY;
+        if (getTileInfo({(int) (player.pos.x - PLAYER_COLLISION_RADIUS * (player.dir.x >= 0 ? 1 : -1)),(int) player.pos.y}) == 0) {
+            player.pos.x = player.pos.x - player.dir.x * MOVE_DISTANCE * deltaTime;
+        }
+        if (getTileInfo({(int) player.pos.x,(int) (player.pos.y - PLAYER_COLLISION_RADIUS * (player.dir.y >= 0 ? 1 : -1))}) == 0) {
+            player.pos.y = player.pos.y - player.dir.y * MOVE_DISTANCE * deltaTime;
         }
     }
     if (keyState.d) {
