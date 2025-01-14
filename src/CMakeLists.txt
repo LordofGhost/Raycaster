@@ -5,4 +5,6 @@ add_executable(Raycaster Main.cpp
         Map.h
         Main.h
         Render.cpp
-        Render.h)
+        Render.h
+        Texture.cpp
+        Texture.h)

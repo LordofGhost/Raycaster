@@ -4,6 +4,8 @@
 #include "math.h"
 #include <iostream>
 
+#include "Texture.h"
+
 int draw3dSpace(SDL_Renderer* renderer, Player &player) {
     for (int renderColumn = 0; renderColumn < RENDER_WIDTH; renderColumn++) {
         // these variables determinate the direction of the ray for the current column
@@ -12,9 +14,9 @@ int draw3dSpace(SDL_Renderer* renderer, Player &player) {
         vd2D columnDirection = rotateVector(player.dir, degreeToRad(columnAngle));
         double angleDifference = abs(degreeToRad(columnAngle));
 
-        int tileColor; // color of the hit wall
+        int tileTextureID;
         bool hitOnAxisX; // create a shadow effect on wall that face the y-axis
-        double wallDistance = dda(player.pos, columnDirection, tileColor, hitOnAxisX);
+        double wallDistance = dda(player.pos, columnDirection, tileTextureID, hitOnAxisX);
         double wallDistanceNoFishEye =  wallDistance * cos(angleDifference); // the cos value is needed to remove the fisheye effect
 
         // calculate the position where the ray hits the wall to correctly map the texture
@@ -38,7 +40,9 @@ int draw3dSpace(SDL_Renderer* renderer, Player &player) {
         int yBottom = (RENDER_HEIGHT / 2) + (distanceToHeight / 2);
         // loop over all pixel on the column that belong to the wall
         for (int pixel = yTop; pixel <= yBottom; pixel++) {
-            if (tileColor != 0) setRenderColor(renderer, tileColor, wallHitPosition, hitOnAxisX); else continue; // skip column if, it is out of map
+            // TODO Add dynamic texture scalling, replace 8 with texture dimension variable
+            int* pixelColor = getTextureColor(tileTextureID, floor(wallHitPosition * 8), floor(double(pixel - yTop) / distanceToHeight * 8));
+            SDL_SetRenderDrawColor(renderer, pixelColor[0], pixelColor[1], pixelColor[2],255);
             SDL_RenderPoint(renderer, renderColumn, pixel);
         }
     }
@@ -72,21 +76,4 @@ int drawMiniMap(SDL_Renderer* renderer, Player &player) {
     SDL_SetRenderDrawColor(renderer, 255,255,255,255);
     SDL_RenderPoint(renderer, player.pos.x * miniMapScale, player.pos.y * miniMapScale);
     return 1;
-}
-
-void setRenderColor(SDL_Renderer* renderer, int tileTextureID, double pos, bool shadow) {
-    switch (tileTextureID) {
-        case 0:
-            SDL_SetRenderDrawColor(renderer, 0,0,0,255);
-            break;
-        case 1:
-            shadow ? SDL_SetRenderDrawColor(renderer, 170 * pos,0,0,255) : SDL_SetRenderDrawColor(renderer, 255 * pos,0,0,255);
-        break;
-        case 2:
-            shadow ? SDL_SetRenderDrawColor(renderer, 0,170 * pos,0,255) : SDL_SetRenderDrawColor(renderer, 0,255 * pos,0,255);
-        break;
-        case 3:
-            shadow ? SDL_SetRenderDrawColor(renderer, 0,0,170 * pos,255) : SDL_SetRenderDrawColor(renderer, 0,0,255 * pos,255);
-        break;
-    }
 }
