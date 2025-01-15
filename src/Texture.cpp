@@ -36,3 +36,7 @@ int texture[3][8][8][3] = {
 int *getTextureColor(int textureID, int x, int y) {
     return texture[textureID-1][y][x];
 }
+
+int getTextureDimensions(int textureID) {
+    return sizeof(texture[textureID-1]) / sizeof(texture[textureID-1][0]);
+}

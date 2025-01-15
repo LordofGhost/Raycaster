@@ -40,8 +40,7 @@ int draw3dSpace(SDL_Renderer* renderer, Player &player) {
         int yBottom = (RENDER_HEIGHT / 2) + (distanceToHeight / 2);
         // loop over all pixel on the column that belong to the wall
         for (int pixel = yTop; pixel <= yBottom; pixel++) {
-            // TODO Add dynamic texture scalling, replace 8 with texture dimension variable
-            int* pixelColor = getTextureColor(tileTextureID, floor(wallHitPosition * 8), floor(double(pixel - yTop) / distanceToHeight * 8));
+            int* pixelColor = getTextureColor(tileTextureID, floor(wallHitPosition * getTextureDimensions(tileTextureID)), floor(double(pixel - yTop) / distanceToHeight * getTextureDimensions(tileTextureID)));
             SDL_SetRenderDrawColor(renderer, pixelColor[0], pixelColor[1], pixelColor[2],255);
             SDL_RenderPoint(renderer, renderColumn, pixel);
         }
