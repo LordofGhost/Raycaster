@@ -2,9 +2,11 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h> // needed for callbacks
 #include <SDL3/SDL_events.h>
+#include <SDL3/SDL_opengl.h>
 #include <iostream>
 
 #include "Main.h"
+
 #include "DDA.h"
 #include "Map.h"
 #include "Render.h"
@@ -13,6 +15,7 @@ static int windowHeight = RENDER_HEIGHT;
 static int windowWidth = RENDER_WIDTH;
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
+static SDL_GLContext glcontext;
 static Player player;
 static KeyState keyState;
 static Uint32 lastFrameTime = 0;
@@ -28,12 +31,17 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    if (!SDL_CreateWindowAndRenderer("Raycaster", windowWidth, windowHeight, 0, &window, &renderer)) {
-        SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
-        return SDL_APP_FAILURE;
-    }
+    // Create SDL window
+    window = SDL_CreateWindow("Raycaster", windowWidth, windowHeight, SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);
 
-    SDL_SetWindowResizable(window, true);
+    // Create an OpenGL context associated with the window.
+    glcontext = SDL_GL_CreateContext(window);
+
+    // now you can make GL calls.
+    glClearColor(0,1,0,1);
+    glClear(GL_COLOR_BUFFER_BIT);
+    SDL_GL_SwapWindow(window);
+
 
     setStartingPoint(player);
 
@@ -125,4 +133,6 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     return SDL_APP_CONTINUE;
 }
 
-void SDL_AppQuit(void *appstate, SDL_AppResult result) {}
+void SDL_AppQuit(void *appstate, SDL_AppResult result) {
+    SDL_GL_DestroyContext(glcontext);
+}
