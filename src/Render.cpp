@@ -40,9 +40,10 @@ int draw3dSpace(SDL_Texture* buffer, Player &player) {
         }
 
         // making the height of wall proportional to the screen height
-        int distanceToHeight = RENDER_HEIGHT / wallDistanceNoFishEye;
+        double wallHeight = RENDER_HEIGHT / wallDistanceNoFishEye;
         // Prevent from drawing outside the renderer
-        distanceToHeight > RENDER_HEIGHT ? distanceToHeight = RENDER_HEIGHT : distanceToHeight;
+        int distanceToHeight;
+        wallHeight > RENDER_HEIGHT ? distanceToHeight = RENDER_HEIGHT : distanceToHeight = wallHeight;
 
         // calculating the highest and lowest pixel of the wall proportional to the screen
         int yTop = (RENDER_HEIGHT / 2) - (distanceToHeight / 2);
@@ -53,7 +54,11 @@ int draw3dSpace(SDL_Texture* buffer, Player &player) {
 
             // the pixel color needs to be stored in a local variable because it gets modified be the shadow effect
             int pixelColor[] = {0,0,0};
-            getTextureColor(tileTextureID, floor(wallHitPosition * getTextureDimensions(tileTextureID)), floor(double(pixel - yTop) / distanceToHeight * getTextureDimensions(tileTextureID)), pixelColor);
+            double pixelOffset = pixel - (RENDER_HEIGHT / 2 - wallHeight / 2);
+            vi2D textureCoordinate;
+            textureCoordinate.x = floor(wallHitPosition * getTextureDimensions(tileTextureID));
+            textureCoordinate.y = floor((pixelOffset / wallHeight) * getTextureDimensions(tileTextureID));
+            getTextureColor(tileTextureID, textureCoordinate.x, textureCoordinate.y, pixelColor);
 
             // add shadow effect to texture if the wall is on the x-axis
             if (hitOnAxisX) applyShadow(pixelColor);
