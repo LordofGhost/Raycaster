@@ -41,6 +41,8 @@ int draw3dSpace(SDL_Renderer* renderer, Player &player) {
         // loop over all pixel on the column that belong to the wall
         for (int pixel = yTop; pixel <= yBottom; pixel++) {
             int* pixelColor = getTextureColor(tileTextureID, floor(wallHitPosition * getTextureDimensions(tileTextureID)), floor(double(pixel - yTop) / distanceToHeight * getTextureDimensions(tileTextureID)));
+
+            // these two function calls cause a huge performance problem
             SDL_SetRenderDrawColor(renderer, pixelColor[0], pixelColor[1], pixelColor[2],255);
             SDL_RenderPoint(renderer, renderColumn, pixel);
         }

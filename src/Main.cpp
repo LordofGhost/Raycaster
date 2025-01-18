@@ -69,7 +69,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     if (event->type == SDL_EVENT_WINDOW_RESIZED) {
         windowWidth = event->window.data1;
         windowHeight = event->window.data2;
-        SDL_SetRenderScale(renderer,windowWidth / RENDER_WIDTH, windowHeight / RENDER_HEIGHT);
+        SDL_SetRenderScale(renderer,windowWidth / (float)RENDER_WIDTH, windowHeight / (float)RENDER_HEIGHT);
     }
 
     return SDL_APP_CONTINUE;
