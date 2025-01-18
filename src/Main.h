@@ -9,6 +9,7 @@
 #define MOVE_DISTANCE 0.002
 #define ROTATE_ANGLE 0.001
 #define PLAYER_COLLISION_RADIUS 0.3
+#define SHADOW_STRENGTH 40
 
 enum keyCodes {
     W = 119,
