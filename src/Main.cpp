@@ -13,6 +13,8 @@ static int windowHeight = RENDER_HEIGHT;
 static int windowWidth = RENDER_WIDTH;
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
+static SDL_Texture *buffer = NULL;
+static SDL_FRect bufferTargetSize = {0, 0, RENDER_WIDTH, RENDER_HEIGHT};
 static Player player;
 static KeyState keyState;
 static Uint32 lastFrameTime = 0;
@@ -32,6 +34,9 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
+
+    buffer = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, RENDER_WIDTH, RENDER_HEIGHT);
+    SDL_SetTextureScaleMode(buffer, SDL_SCALEMODE_NEAREST);
 
     SDL_SetWindowResizable(window, true);
 
@@ -116,10 +121,11 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         player.dir = rotateVector(player.dir, ROTATE_ANGLE * deltaTime);
     }
 
-    draw3dSpace(renderer, player);
+    draw3dSpace(buffer, player);
+    SDL_RenderTexture(renderer, buffer, NULL, &bufferTargetSize);
+
     drawMiniMap(renderer, player);
 
-    /* put the newly-cleared rendering on the screen. */
     SDL_RenderPresent(renderer);
 
     return SDL_APP_CONTINUE;

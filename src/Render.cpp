@@ -6,7 +6,12 @@
 
 #include "Texture.h"
 
-int draw3dSpace(SDL_Renderer* renderer, Player &player) {
+int draw3dSpace(SDL_Texture* buffer, Player &player) {
+    void* pixels;
+    int pitch;
+    SDL_LockTexture(buffer, NULL, &pixels, &pitch);
+    Uint32* pixelArray = (Uint32*)pixels;
+
     for (int renderColumn = 0; renderColumn < RENDER_WIDTH; renderColumn++) {
         // these variables determinate the direction of the ray for the current column
         double columnStepSize = (double)RENDER_FOV / (double)RENDER_WIDTH;
@@ -42,11 +47,10 @@ int draw3dSpace(SDL_Renderer* renderer, Player &player) {
         for (int pixel = yTop; pixel <= yBottom; pixel++) {
             int* pixelColor = getTextureColor(tileTextureID, floor(wallHitPosition * getTextureDimensions(tileTextureID)), floor(double(pixel - yTop) / distanceToHeight * getTextureDimensions(tileTextureID)));
 
-            // these two function calls cause a huge performance problem
-            SDL_SetRenderDrawColor(renderer, pixelColor[0], pixelColor[1], pixelColor[2],255);
-            SDL_RenderPoint(renderer, renderColumn, pixel);
+            pixelArray[pixel * (pitch / 4) + renderColumn] = SDL_MapRGBA(SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_ARGB8888), nullptr, pixelColor[0], pixelColor[1], pixelColor[2], 255);
         }
     }
+    SDL_UnlockTexture(buffer);
     return 1;
 }
 
