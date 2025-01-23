@@ -8,6 +8,7 @@
 #include "DDA.h"
 #include "Map.h"
 #include "Render.h"
+#include "Texture.h"
 
 static int windowHeight = RENDER_HEIGHT;
 static int windowWidth = RENDER_WIDTH;
@@ -34,6 +35,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
+    loadPngTextures("../res/textures");
 
     buffer = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, RENDER_WIDTH, RENDER_HEIGHT);
     SDL_SetTextureScaleMode(buffer, SDL_SCALEMODE_NEAREST);
