@@ -17,14 +17,25 @@ int draw3dSpace(SDL_Texture* buffer, Player &player) {
         // calculating the pixel column specific units
         double columnStepSize = (double)RENDER_FOV / (double)RENDER_WIDTH;
         double columnAngle = (columnStepSize * renderColumn) - (RENDER_FOV / 2);
-        double columnAngleDifference = abs(degreeToRad(columnAngle));
         vd2D columnDirection = rotateVector(player.dir, degreeToRad(columnAngle));
 
-        // get the distance to the next wall in the with the given direction
+        drawWalls(pixelArray, player, renderColumn, columnDirection, columnAngle, pitch);
+    }
+
+    // Shift buffer from RAM to the GPU
+    SDL_UnlockTexture(buffer);
+
+    return 1;
+}
+
+void drawWalls(Uint32* pixelArray, Player &player, int renderColumn, vd2D columnDirection, double columnAngle, int pitch) {
+
+        // get the distance to the next wall in the given direction
         int tileTextureID;
         bool hitOnAxisX;
         double wallDistance = dda(player.pos, columnDirection, tileTextureID, hitOnAxisX);
         // the cos value is needed to remove the fisheye effect
+        double columnAngleDifference = abs(degreeToRad(columnAngle));
         double wallDistanceNoFishEye =  wallDistance * cos(columnAngleDifference);
 
         // calculate the position where the ray hits the wall to correctly map the texture
@@ -39,8 +50,9 @@ int draw3dSpace(SDL_Texture* buffer, Player &player) {
             wallHitPosition -= floor(wallHitPosition);
         }
 
-        // making the height of wall proportional to the screen height
+        // making the height of wall proportional to the screen height, while respecting the FOV
         double wallHeight = RENDER_HEIGHT / wallDistanceNoFishEye;
+        //double wallHeight = RENDER_HEIGHT / wallDistanceNoFishEye;
         // Prevent from drawing outside the renderer
         int distanceToHeight;
         wallHeight > RENDER_HEIGHT ? distanceToHeight = RENDER_HEIGHT : distanceToHeight = wallHeight;
@@ -56,8 +68,8 @@ int draw3dSpace(SDL_Texture* buffer, Player &player) {
             int pixelColor[] = {0,0,0};
             double pixelOffset = pixel - (RENDER_HEIGHT / 2 - wallHeight / 2);
             vi2D textureCoordinate;
-            textureCoordinate.x = floor(wallHitPosition * getTextureDimensions(tileTextureID));
-            textureCoordinate.y = floor((pixelOffset / wallHeight) * getTextureDimensions(tileTextureID));
+            textureCoordinate.x = floor(wallHitPosition * TEXTURE_SIZE);
+            textureCoordinate.y = floor((pixelOffset / wallHeight) * TEXTURE_SIZE);
             getTextureColor(tileTextureID, textureCoordinate.x, textureCoordinate.y, pixelColor);
 
             // add shadow effect to texture if the wall is on the x-axis
@@ -66,15 +78,6 @@ int draw3dSpace(SDL_Texture* buffer, Player &player) {
             // modify the corresponding pixel in the buffer
             pixelArray[pixel * (pitch / 4) + renderColumn] = SDL_MapRGBA(SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_ARGB8888), nullptr, pixelColor[0], pixelColor[1], pixelColor[2], 255);
         }
-    }
-
-    // Shift buffer from RAM to the GPU
-    SDL_UnlockTexture(buffer);
-
-    return 1;
-}
-
-double wallHitPosition(bool hitOnAxisX) {
 }
 
 void applyShadow(int* pixelColor) {
@@ -91,7 +94,10 @@ int drawMiniMap(SDL_Renderer* renderer, Player &player) {
 
     for (int y = 0; y < mapDimensions.y; y++) {
         for (int x = 0; x < mapDimensions.x; x++) {
+            // if on the current cell is a wall, draw a white pixel, otherwise a black one
             getTileInfo({x, y}) != 0 ? SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255) : SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+
+            // create a square that fits the minimap scale
             SDL_FRect rect;
             rect.x = x * miniMapScale;
             rect.y = y * miniMapScale;

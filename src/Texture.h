@@ -15,6 +15,5 @@ struct Pixel {
 int getTextureColor(int textureID, int x, int y, int* pixelColor);
 int loadPngTextures(const std::filesystem::path& directory);
 void getRGBValuesFromPNG(const std::string& filePath);
-int getTextureDimensions(int textureID);
 
 #endif //TEXTURE_H

@@ -7,7 +7,9 @@
 #define RENDER_FOV 60
 #define MINI_MAP_SIZE 64
 #define SHADOW_STRENGTH 40
+
 #define TEXTURE_SIZE 32
+#define TEXTURE_COUNT 10
 
 #define MOVE_DISTANCE 0.002
 #define ROTATE_ANGLE 0.001

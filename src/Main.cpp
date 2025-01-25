@@ -35,13 +35,18 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
+
+    // load the color values in the data segment
     loadPngTextures("../res/textures");
 
+    // create buffer where every frame is written to
     buffer = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, RENDER_WIDTH, RENDER_HEIGHT);
     SDL_SetTextureScaleMode(buffer, SDL_SCALEMODE_NEAREST);
 
+    // enable window resizing and full screen mode
     SDL_SetWindowResizable(window, true);
 
+    // set the player starting position and rotation
     setStartingPoint(player);
 
     return SDL_APP_CONTINUE;
@@ -51,10 +56,11 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
 
     if (event->type == SDL_EVENT_QUIT) {
-        return SDL_APP_SUCCESS;  // end the program, reporting success to the OS
+        // end the program, reporting success to the OS
+        return SDL_APP_SUCCESS;
     }
 
-    // control movement
+    // using key states to be able to move in more than one direction at a time and make it smooth
     if (event->type == SDL_EVENT_KEY_DOWN || event->type == SDL_EVENT_KEY_UP) {
         switch (event->key.key) {
             case W:
@@ -74,8 +80,11 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 
     // scale the window on resize
     if (event->type == SDL_EVENT_WINDOW_RESIZED) {
+        // get window size from event object
         windowWidth = event->window.data1;
         windowHeight = event->window.data2;
+
+        // calculate the needed scaling to fill the screen, while keeping the render resolution and the set it
         SDL_SetRenderScale(renderer,windowWidth / (float)RENDER_WIDTH, windowHeight / (float)RENDER_HEIGHT);
     }
 
@@ -89,10 +98,12 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     SDL_RenderClear(renderer);
 
     Uint64 timeSinceStart = SDL_GetTicks();
+    // deltaTime is the time passed since the last frame
     Uint64 deltaTime = timeSinceStart - lastFrameTime;
     lastFrameTime = timeSinceStart;
 
     fpsCounter++;
+    // the fpsCounter if one second is passed since the last print of it
     if ((timeSinceStart - timeLastPrintFPSCounter) >= 1000) {
         std::cout << "FPS: " << fpsCounter << std::endl;
         timeLastPrintFPSCounter = timeSinceStart;
@@ -100,9 +111,13 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     }
 
     if (keyState.w) {
+        /*  check if the player is allowed to move on the x-axis
+            by taking the player position and displacing it by the collision radius
+            the displacement factor has to be positive or negative depending on the move direction */
         if (getTileInfo({(int) (player.pos.x + PLAYER_COLLISION_RADIUS * (player.dir.x >= 0 ? 1 : -1)),(int) player.pos.y}) == 0) {
             player.pos.x = player.pos.x + player.dir.x * MOVE_DISTANCE * deltaTime;
         }
+        // check if the player id allowed to move on the y-axis
         if (getTileInfo({(int) player.pos.x,(int) (player.pos.y + PLAYER_COLLISION_RADIUS * (player.dir.y >= 0 ? 1 : -1))}) == 0) {
             player.pos.y = player.pos.y + player.dir.y * MOVE_DISTANCE * deltaTime;
         }
@@ -124,11 +139,15 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         player.dir = rotateVector(player.dir, ROTATE_ANGLE * deltaTime);
     }
 
+    // call the render function
     draw3dSpace(buffer, player);
+    // put the buffer data to the renderer
     SDL_RenderTexture(renderer, buffer, NULL, &bufferTargetSize);
 
+    // render the mini map over the 3d space
     drawMiniMap(renderer, player);
 
+    // display the image to the screen
     SDL_RenderPresent(renderer);
 
     return SDL_APP_CONTINUE;
