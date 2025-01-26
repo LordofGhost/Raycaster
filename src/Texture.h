@@ -12,7 +12,7 @@ struct Pixel {
     Uint8 b;
 };
 
-int getTextureColor(int textureID, int x, int y, int* pixelColor);
+int getTextureColor(int textureID, int x, int y, Pixel &color);
 int loadPngTextures(const std::filesystem::path& directory);
 void getRGBValuesFromPNG(const std::string& filePath);
 

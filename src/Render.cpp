@@ -1,15 +1,14 @@
 #include "Render.h"
 #include "DDA.h"
 #include "Map.h"
-#include "Texture.h"
 #include <math.h>
 
 int draw3dSpace(SDL_Texture* buffer, Player &player) {
 
     // load the buffer in the RAM and get access to it
-    void* pixels;
-    int pitch;
+    void* pixels; int pitch; // the pitch is not needed but can't be replaced by a nullptr
     SDL_LockTexture(buffer, NULL, &pixels, &pitch);
+    // memory layout: FF(alpha) FF(red) FF(green) FF(blue)
     Uint32* pixelArray = (Uint32*)pixels;
 
     for (int renderColumn = 0; renderColumn < RENDER_WIDTH; renderColumn++) {
@@ -19,7 +18,8 @@ int draw3dSpace(SDL_Texture* buffer, Player &player) {
         double columnAngle = (columnStepSize * renderColumn) - (RENDER_FOV / 2);
         vd2D columnDirection = rotateVector(player.dir, degreeToRad(columnAngle));
 
-        drawWalls(pixelArray, player, renderColumn, columnDirection, columnAngle, pitch);
+        drawFloor(pixelArray, renderColumn);
+        drawWalls(pixelArray, player, renderColumn, columnDirection, columnAngle);
     }
 
     // Shift buffer from RAM to the GPU
@@ -28,7 +28,14 @@ int draw3dSpace(SDL_Texture* buffer, Player &player) {
     return 1;
 }
 
-void drawWalls(Uint32* pixelArray, Player &player, int renderColumn, vd2D columnDirection, double columnAngle, int pitch) {
+void drawFloor(Uint32* pixelArray, int &renderColumn) {
+
+    for (int pixel = RENDER_HEIGHT/2; pixel < RENDER_HEIGHT; pixel++) {
+        pixelArray[pixel * RENDER_WIDTH + renderColumn] = 255 + (255 << 8) + (255 << 16) + (255 << 24) ;
+    }
+}
+
+void drawWalls(Uint32* pixelArray, Player &player, int &renderColumn, vd2D &columnDirection, double &columnAngle) {
 
         // get the distance to the next wall in the given direction
         int tileTextureID;
@@ -65,26 +72,27 @@ void drawWalls(Uint32* pixelArray, Player &player, int renderColumn, vd2D column
         for (int pixel = yTop; pixel <= yBottom; pixel++) {
 
             // the pixel color needs to be stored in a local variable because it gets modified be the shadow effect
-            int pixelColor[] = {0,0,0};
+            Pixel color = {0,0,0};
             double pixelOffset = pixel - (RENDER_HEIGHT / 2 - wallHeight / 2);
             vi2D textureCoordinate;
             textureCoordinate.x = floor(wallHitPosition * TEXTURE_SIZE);
             textureCoordinate.y = floor((pixelOffset / wallHeight) * TEXTURE_SIZE);
-            getTextureColor(tileTextureID, textureCoordinate.x, textureCoordinate.y, pixelColor);
+            getTextureColor(tileTextureID, textureCoordinate.x, textureCoordinate.y, color);
 
             // add shadow effect to texture if the wall is on the x-axis
-            if (hitOnAxisX) applyShadow(pixelColor);
+            if (hitOnAxisX) applyShadow(color);
 
-            // modify the corresponding pixel in the buffer
-            pixelArray[pixel * (pitch / 4) + renderColumn] = SDL_MapRGBA(SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_ARGB8888), nullptr, pixelColor[0], pixelColor[1], pixelColor[2], 255);
+            /* modify the corresponding pixel in the buffer
+               by modifying the Uint32, where 8 bits stand for one color channel*/
+            pixelArray[pixel * RENDER_WIDTH + renderColumn] = color.r + (color.g << 8) + (color.b << 16) + (255 << 24) ;
         }
 }
 
-void applyShadow(int* pixelColor) {
+void applyShadow(Pixel &color) {
     // reduce the color intensity on all 3 color channel
-    for (int i = 0; i < 3; i++) {
-         pixelColor[i] > SHADOW_STRENGTH ? pixelColor[i] -= SHADOW_STRENGTH : pixelColor[i] = 0;
-    }
+    color.r > SHADOW_STRENGTH ? color.r -= SHADOW_STRENGTH : color.r = 0;
+    color.g > SHADOW_STRENGTH ? color.g -= SHADOW_STRENGTH : color.g = 0;
+    color.b > SHADOW_STRENGTH ? color.b -= SHADOW_STRENGTH : color.b = 0;
 }
 
 int drawMiniMap(SDL_Renderer* renderer, Player &player) {

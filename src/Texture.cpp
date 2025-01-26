@@ -71,10 +71,10 @@ void getRGBValuesFromPNG(const std::string& filePath) {
     SDL_DestroySurface(surface);
 }
 
-int getTextureColor(const int textureID, const int x, const int y, int* pixelColor) {
+int getTextureColor(const int textureID, const int x, const int y, Pixel &color) {
     // get the according rgb value of the pixel
-    pixelColor[0] = textures[textureID-1][x][y].r;
-    pixelColor[1] = textures[textureID-1][x][y].g;
-    pixelColor[2] = textures[textureID-1][x][y].b;
+    color.r = textures[textureID-1][x][y].r;
+    color.g = textures[textureID-1][x][y].g;
+    color.b = textures[textureID-1][x][y].b;
     return 1;
 }
