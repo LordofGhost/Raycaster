@@ -11,6 +11,8 @@ int draw3dSpace(SDL_Texture* buffer, Player &player) {
     // memory layout: FF(alpha) FF(red) FF(green) FF(blue)
     Uint32* pixelArray = (Uint32*)pixels;
 
+    drawCeiling(pixelArray, player);
+
     for (int renderColumn = 0; renderColumn < RENDER_WIDTH; renderColumn++) {
 
         // calculating the pixel column specific units
@@ -18,8 +20,7 @@ int draw3dSpace(SDL_Texture* buffer, Player &player) {
         double columnAngle = (columnStepSize * renderColumn) - (RENDER_FOV / 2);
         vd2D columnDirection = rotateVector(player.dir, degreeToRad(columnAngle));
 
-        drawFloor(pixelArray, renderColumn);
-        drawWalls(pixelArray, player, renderColumn, columnDirection, columnAngle);
+        drawWall(pixelArray, player, renderColumn, columnDirection, columnAngle);
     }
 
     // Shift buffer from RAM to the GPU
@@ -28,14 +29,35 @@ int draw3dSpace(SDL_Texture* buffer, Player &player) {
     return 1;
 }
 
-void drawFloor(Uint32* pixelArray, int &renderColumn) {
+void drawCeiling(Uint32* pixelArray, Player &player) {
 
-    for (int pixel = RENDER_HEIGHT/2; pixel < RENDER_HEIGHT; pixel++) {
-        pixelArray[pixel * RENDER_WIDTH + renderColumn] = 255 + (255 << 8) + (255 << 16) + (255 << 24) ;
+    for (int renderRow = 0; renderRow < RENDER_HEIGHT/2; renderRow++) {
+
+        /* the row is a line in front of the player that is orthogonal to the player.dir,
+         * the length of the line depends on the distance */
+        double rowScale = 1;
+        vd2D rowPosition;
+        // TODO make scale value proportional to the distance
+        vd2D rowDirection = {player.dir.y * rowScale, -player.dir.x * rowScale};
+        rowPosition.x = player.pos.x + player.dir.x; // * renderRow
+        rowPosition.y = player.pos.y + player.dir.y;
+
+        for (int pixel = 0; pixel < RENDER_WIDTH; pixel++) {
+            Pixel color = {255,255,255};
+            // number between -1 and 1, representing a position the row
+            double pixelToScale = (pixel - double(RENDER_WIDTH/2)) / double(RENDER_WIDTH/2);
+            vd2D textureCoordinate;
+            textureCoordinate.x = rowPosition.x + rowDirection.x * pixelToScale;
+            textureCoordinate.y = rowPosition.y + rowDirection.y * pixelToScale;
+            //int tileTextureID = getTileInfo(FLOOR,{(int)textureCoordinate.x - 1, (int)textureCoordinate.y - 1});
+            getTextureColor(2, textureCoordinate.x, textureCoordinate.y, color);
+
+            pixelArray[pixel + RENDER_WIDTH * renderRow] = color.b + (color.g << 8) + (color.r << 16) + (255 << 24) ;
+        }
     }
 }
 
-void drawWalls(Uint32* pixelArray, Player &player, int &renderColumn, vd2D &columnDirection, double &columnAngle) {
+void drawWall(Uint32* pixelArray, Player &player, int &renderColumn, vd2D &columnDirection, double &columnAngle) {
 
         // get the distance to the next wall in the given direction
         int tileTextureID;
@@ -75,7 +97,12 @@ void drawWalls(Uint32* pixelArray, Player &player, int &renderColumn, vd2D &colu
             Pixel color = {0,0,0};
             double pixelOffset = pixel - (RENDER_HEIGHT / 2 - wallHeight / 2);
             vi2D textureCoordinate;
-            textureCoordinate.x = floor(wallHitPosition * TEXTURE_SIZE);
+            // flip texture on the x-axis if the wall is on the left or bottom
+            if (columnDirection.x < 0 && hitOnAxisX || columnDirection.y > 0 && !hitOnAxisX) {
+                textureCoordinate.x = TEXTURE_SIZE - 1 - floor(wallHitPosition * TEXTURE_SIZE);
+            } else {
+                textureCoordinate.x = floor(wallHitPosition * TEXTURE_SIZE);
+            }
             textureCoordinate.y = floor((pixelOffset / wallHeight) * TEXTURE_SIZE);
             getTextureColor(tileTextureID, textureCoordinate.x, textureCoordinate.y, color);
 
@@ -103,7 +130,7 @@ int drawMiniMap(SDL_Renderer* renderer, Player &player) {
     for (int y = 0; y < mapDimensions.y; y++) {
         for (int x = 0; x < mapDimensions.x; x++) {
             // if on the current cell is a wall, draw a white pixel, otherwise a black one
-            getTileInfo({x, y}) != 0 ? SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255) : SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+            getTileInfo(FLOOR, {x, y}) != 0 ? SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255) : SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 
             // create a square that fits the minimap scale
             SDL_FRect rect;

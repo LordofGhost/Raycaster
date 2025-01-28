@@ -4,7 +4,13 @@
 
 #include "Main.h"
 
-int getTileInfo(vi2D);
+enum {
+    FLOOR = 0,
+    WALL = 1,
+    CEILING = 2,
+};
+
+int getTileInfo(int type, vi2D);
 int getMapMaxDistance();
 vi2D getMatrixDimension();
 void setStartingPoint(Player&);
