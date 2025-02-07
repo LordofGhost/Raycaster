@@ -23,9 +23,9 @@ int loadPngTextures(const std::filesystem::path& directory) {
         }
 
         if (!loadedTextures) {
-            std::cerr << "loadPngTextures: no textures could be loaded" << std::endl;
-        } else if (DEBUG) {
-            std::cout << "loadPngTextures: " << loadedTextures << " textures have been loaded" << std::endl;
+            if (DEBUG) std::cerr << "loadPngTextures: no textures could be loaded" << std::endl;
+        } else {
+            if (DEBUG) std::cout << "loadPngTextures: " << loadedTextures << " textures have been loaded" << std::endl;
         }
     } else {
         std::cerr << "loadPngTextures: no directory found" << std::endl;
@@ -43,7 +43,7 @@ void getRGBValuesFromPNG(const std::string& filePath) {
     // create memory and load the image in
     SDL_Surface* surface = IMG_Load(filePath.c_str());
     if (!surface) {
-        std::cerr << "getRGBValuesFromPNG: file could not be loaded" << std::endl;
+        if (DEBUG) std::cerr << "getRGBValuesFromPNG: file could not be loaded" << std::endl;
         return;
     }
 
@@ -53,7 +53,8 @@ void getRGBValuesFromPNG(const std::string& filePath) {
     Uint32* pixels = (Uint32*)surface->pixels;
     // check if the texture has the right resolution
     if (surface->w != TEXTURE_SIZE || surface->h != TEXTURE_SIZE) {
-        std::cerr << "getRGBValuesFromPNG: file with wrong resolution at " << filePathString << std::endl;
+        if (DEBUG) std::cerr << "getRGBValuesFromPNG: file with wrong resolution at " << filePathString << std::endl;
+        return;
     }
 
     // loop over every pixel of the surface
@@ -79,17 +80,18 @@ void getRGBValuesFromPNG(const std::string& filePath) {
     SDL_DestroySurface(surface);
 }
 
-void getTextureColor(const int textureID, const int x, const int y, Pixel &color) {
-    if (x > TEXTURE_SIZE || y > TEXTURE_SIZE) {
-        std::cerr << "getTextureColor: trying to get color value outside of texture" << std::endl;
+void getTextureColor(const int textureID, vi2D position, Pixel &color) {
+    if (textureID == 0) return;
+    if (position.x > TEXTURE_SIZE || position.y > TEXTURE_SIZE) {
+        if (DEBUG) std::cerr << "getTextureColor: trying to get color value outside of texture" << std::endl;
         return;
     }
     if (textureID > TEXTURE_COUNT - 1) {
-        std::cerr << "getTextureColor: trying to read from not existing texture" << std::endl;
+        if (DEBUG) std::cerr << "getTextureColor: trying to read from not existing texture" << std::endl;
         return;
     }
     // get the according rgb value of the pixel
-    color.r = textures[textureID-1][x][y].r;
-    color.g = textures[textureID-1][x][y].g;
-    color.b = textures[textureID-1][x][y].b;
+    color.r = textures[textureID-1][position.x][position.y].r;
+    color.g = textures[textureID-1][position.x][position.y].g;
+    color.b = textures[textureID-1][position.x][position.y].b;
 }

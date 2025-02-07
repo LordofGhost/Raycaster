@@ -67,7 +67,7 @@ double dda(vd2D pos, vd2D dir, int &mapTileInformation, bool &hitOnAxisX) {
             hitOnAxisX = false;
         }
 
-        if ((mapTileInformation = getTileInfo(FLOOR, mapTile)) != 0) hitWall = true;
+        if ((mapTileInformation = getTileInfo(WALL, mapTile)) != 0) hitWall = true;
     }
 
     return traveledDistance;

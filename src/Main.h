@@ -2,7 +2,7 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#define DEBUG true
+#define DEBUG false
 
 #define RENDER_HEIGHT 360
 #define RENDER_WIDTH 640
@@ -14,7 +14,7 @@
 #define MAP_SIZE_Y 8
 
 #define TEXTURE_SIZE 64
-#define TEXTURE_COUNT 10
+#define TEXTURE_COUNT 2
 
 #define MOVE_DISTANCE 0.002
 #define ROTATE_ANGLE 0.001

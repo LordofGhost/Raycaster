@@ -9,7 +9,8 @@
 
 int draw3dSpace(SDL_Texture* pixelArray, Player &player);
 void drawCeiling(Uint32* pixelArray, Player &player);
-void drawWall(Uint32* pixelArray, Player &player, int &renderColumn, vd2D &columnDirection, double &columnAngle);
+void drawFloor(Uint32* pixelArray, Player &player);
+void drawWall(Uint32* pixelArray, Player &player);
 void applyShadow(Pixel &color);
 int drawMiniMap(SDL_Renderer* renderer, Player &player);
 
