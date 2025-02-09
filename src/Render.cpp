@@ -52,13 +52,15 @@ void drawFlatTextures(Uint32* pixelArray, Player &player, int type) {
             textureCoordinate.x = (pixelPosition.x - floor(pixelPosition.x)) * TEXTURE_SIZE;
             textureCoordinate.y = (pixelPosition.y - floor(pixelPosition.y)) * TEXTURE_SIZE;
 
-            int tileTextureID = getTileInfo(FLOOR,{(int)pixelPosition.x, (int)pixelPosition.y});
 
-            getTextureColor(tileTextureID, textureCoordinate, color);
 
             if (type == FLOOR) {
+                int tileTextureID = getTileInfo(FLOOR,{(int)pixelPosition.x, (int)pixelPosition.y});
+                getTextureColor(tileTextureID, textureCoordinate, color);
                 pixelArray[pixel + RENDER_WIDTH * RENDER_HEIGHT - (RENDER_WIDTH * renderRow)] = color.b + (color.g << 8) + (color.r << 16) + (255 << 24);
             } else if (type == CEILING) {
+                int tileTextureID = getTileInfo(CEILING,{(int)pixelPosition.x, (int)pixelPosition.y});
+                getTextureColor(tileTextureID, textureCoordinate, color);
                 pixelArray[pixel + RENDER_WIDTH * renderRow] = color.b + (color.g << 8) + (color.r << 16) + (255 << 24);
             }
         }
