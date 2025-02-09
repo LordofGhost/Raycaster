@@ -11,7 +11,8 @@ int draw3dSpace(SDL_Texture* buffer, Player &player) {
     // memory layout: FF(alpha) FF(red) FF(green) FF(blue)
     Uint32* pixelArray = (Uint32*)pixels;
 
-    drawFloor(pixelArray, player);
+    drawFlatTextures(pixelArray, player, CEILING);
+    drawFlatTextures(pixelArray, player, FLOOR);
     drawWall(pixelArray, player);
 
     // Shift buffer from RAM to the GPU
@@ -20,51 +21,46 @@ int draw3dSpace(SDL_Texture* buffer, Player &player) {
     return 1;
 }
 
-void drawFloor(Uint32* pixelArray, Player &player) {
+void drawFlatTextures(Uint32* pixelArray, Player &player, int type) {
 
     for (int renderRow = 0; renderRow < RENDER_HEIGHT/2; renderRow++) {
         // calculate the view angle of camera to the row in the ceiling using the FOV and aspect ratio of the screen
         // (60/16)* 9 / 2 = 17
-        double angle = 17 * (renderRow / double(RENDER_HEIGHT/2)) + 73;
+        double rowAngle = 17 * (renderRow / double(RENDER_HEIGHT/2)) + 73;
 
         // the distance from the player to the current row, where 0.5 is the height of the player in the world space
-        double distanceToRow = tan(degreeToRad(angle)) * 0.5;
-
-        // the length of the row
-        double lengthOfRow = 2 * distanceToRow * tan(degreeToRad(RENDER_FOV/2));
-
-        // the vector points from the left corner of the row all the way to right corner
-        vd2D rowDirection;
-        rowDirection.x = -player.dir.y * lengthOfRow;
-        rowDirection.y = player.dir.x * lengthOfRow;
-
-        vd2D rowPosition;
-        rowPosition.x = player.pos.x + player.dir.x * distanceToRow;
-        rowPosition.y = player.pos.y + player.dir.y * distanceToRow;
-
-        // move the position to the left corner of the row
-        rowPosition.x += -(rowDirection.x / 2);
-        rowPosition.y += -(rowDirection.y / 2);
+        double distanceToRow = tan(degreeToRad(rowAngle)) * 0.5;
 
         for (int pixel = 0; pixel < RENDER_WIDTH; pixel++) {
             Pixel color = {0,0,0};
 
-            // this scaler is a value between 0 and 1 which is used to apply the vector of the row
-            double pixelScaler = pixel / double(RENDER_WIDTH);
+            // the pixel angle is the relative angle from the left corner of the row to the current pixel
+            double pixelAngle = (RENDER_FOV / (double)RENDER_WIDTH) * pixel - (RENDER_FOV / 2);;
 
-            vd2D pixelPositionOnTheRow;
-            pixelPositionOnTheRow.x = rowPosition.x + rowDirection.x * pixelScaler;
-            pixelPositionOnTheRow.y = rowPosition.y + rowDirection.y * pixelScaler;
+            // the individual distance from the player to the pixel to remove the fish eye effect
+            double pixelDistance = distanceToRow / cos(degreeToRad(abs(pixelAngle)));
+
+            // current vector from the player to the pixel
+            vd2D pixelVector = rotateVector({player.dir.x * pixelDistance, player.dir.y * pixelDistance}, degreeToRad(pixelAngle));
+
+            // apply the player position to make the position absolute
+            vd2D pixelPosition;
+            pixelPosition.x = player.pos.x + pixelVector.x;
+            pixelPosition.y = player.pos.y + pixelVector.y;
 
             vi2D textureCoordinate;
-            textureCoordinate.x = (pixelPositionOnTheRow.x - floor(pixelPositionOnTheRow.x)) * TEXTURE_SIZE;
-            textureCoordinate.y = (pixelPositionOnTheRow.y - floor(pixelPositionOnTheRow.y)) * TEXTURE_SIZE;
+            textureCoordinate.x = (pixelPosition.x - floor(pixelPosition.x)) * TEXTURE_SIZE;
+            textureCoordinate.y = (pixelPosition.y - floor(pixelPosition.y)) * TEXTURE_SIZE;
 
-            int tileTextureID = getTileInfo(FLOOR,{(int)pixelPositionOnTheRow.x, (int)pixelPositionOnTheRow.y});
+            int tileTextureID = getTileInfo(FLOOR,{(int)pixelPosition.x, (int)pixelPosition.y});
 
             getTextureColor(tileTextureID, textureCoordinate, color);
 
-            pixelArray[pixel + RENDER_WIDTH * RENDER_HEIGHT - (RENDER_WIDTH * renderRow)] = color.r + (color.g << 8) + (color.b << 16) + (255 << 24);
+            if (type == FLOOR) {
+                pixelArray[pixel + RENDER_WIDTH * RENDER_HEIGHT - (RENDER_WIDTH * renderRow)] = color.b + (color.g << 8) + (color.r << 16) + (255 << 24);
+            } else if (type == CEILING) {
+                pixelArray[pixel + RENDER_WIDTH * renderRow] = color.b + (color.g << 8) + (color.r << 16) + (255 << 24);
+            }
         }
     }
 }
@@ -74,8 +70,7 @@ void drawWall(Uint32* pixelArray, Player &player) {
     for (int renderColumn = 0; renderColumn < RENDER_WIDTH; renderColumn++) {
 
         // calculating the pixel column specific units
-        double columnStepSize = (double)RENDER_FOV / (double)RENDER_WIDTH;
-        double columnAngle = (columnStepSize * renderColumn) - (RENDER_FOV / 2);
+        double columnAngle = ((double)RENDER_FOV / (double)RENDER_WIDTH * renderColumn) - (RENDER_FOV / 2);
         vd2D columnDirection = rotateVector(player.dir, degreeToRad(columnAngle));
 
         // get the distance to the next wall in the given direction
@@ -99,7 +94,7 @@ void drawWall(Uint32* pixelArray, Player &player) {
         }
 
         // making the height of wall proportional to the screen height, while respecting the FOV
-        double wallHeight = RENDER_HEIGHT / wallDistanceNoFishEye * 1.67;
+        double wallHeight = RENDER_HEIGHT / wallDistanceNoFishEye * (5.0/3.0);
         //double wallHeight = RENDER_HEIGHT / wallDistanceNoFishEye;
         // Prevent from drawing outside the renderer
         int distanceToHeight;
@@ -130,7 +125,7 @@ void drawWall(Uint32* pixelArray, Player &player) {
 
             /* modify the corresponding pixel in the buffer
                by modifying the Uint32, where 8 bits stand for one color channel*/
-            pixelArray[pixel * RENDER_WIDTH + renderColumn] = color.r + (color.g << 8) + (color.b << 16) + (255 << 24);
+            pixelArray[pixel * RENDER_WIDTH + renderColumn] = color.b + (color.g << 8) + (color.r << 16) + (255 << 24);
         }
     }
 }
