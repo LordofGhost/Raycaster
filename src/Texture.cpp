@@ -64,7 +64,7 @@ void getRGBValuesFromPNG(const std::string& filePath) {
             Uint32 pixel = pixels[(y * TEXTURE_SIZE) + x];
             Uint8 r, g, b;
             // get the format the data for pixel
-            const SDL_PixelFormatDetails* format = SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_RGB24);
+            const SDL_PixelFormatDetails* format = SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_BGR24);
             // deconstruct the pixel data
             SDL_GetRGB(pixel, format, nullptr, &r, &g, &b);
             // set the rgb value in the texture array
@@ -91,7 +91,5 @@ void getTextureColor(const int textureID, vi2D position, Pixel &color) {
         return;
     }
     // get the according rgb value of the pixel
-    color.r = textures[textureID-1][position.x][position.y].r;
-    color.g = textures[textureID-1][position.x][position.y].g;
-    color.b = textures[textureID-1][position.x][position.y].b;
+    color = textures[textureID-1][position.x][position.y];
 }
