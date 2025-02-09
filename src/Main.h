@@ -2,17 +2,22 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+#define DEBUG false
+
 #define RENDER_HEIGHT 360
 #define RENDER_WIDTH 640
 #define RENDER_FOV 60
 #define MINI_MAP_SIZE 64
-#define SHADOW_STRENGTH 40
+#define SHADOW_STRENGTH 15
 
-#define TEXTURE_SIZE 32
-#define TEXTURE_COUNT 10
+#define MAP_SIZE_X 8
+#define MAP_SIZE_Y 8
+
+#define TEXTURE_SIZE 64
+#define TEXTURE_COUNT 2
 
 #define MOVE_DISTANCE 0.002
-#define ROTATE_ANGLE 0.001
+#define ROTATE_ANGLE 0.0013
 #define PLAYER_COLLISION_RADIUS 0.3
 
 
