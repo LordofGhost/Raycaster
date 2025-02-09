@@ -63,7 +63,7 @@ void drawFloor(Uint32* pixelArray, Player &player) {
 
             getTextureColor(tileTextureID, textureCoordinate, color);
 
-            pixelArray[pixel + RENDER_WIDTH * RENDER_HEIGHT - (RENDER_WIDTH * renderRow)] = color.b + (color.g << 8) + (color.r << 16) + (255 << 24) ;
+            pixelArray[pixel + RENDER_WIDTH * RENDER_HEIGHT - (RENDER_WIDTH * renderRow)] = color.r + (color.g << 8) + (color.b << 16) + (255 << 24);
         }
     }
 }
