@@ -11,9 +11,12 @@ int draw3dSpace(SDL_Texture* buffer, Player &player) {
     // memory layout: FF(alpha) FF(red) FF(green) FF(blue)
     Uint32* pixelArray = (Uint32*)pixels;
 
+    // this 1d array represents the distance to the wall for each pixel column
+    double* distanceArray = new double[RENDER_WIDTH];
+
     drawFlatTextures(pixelArray, player, CEILING);
     drawFlatTextures(pixelArray, player, FLOOR);
-    drawWall(pixelArray, player);
+    drawWall(pixelArray, player, distanceArray);
 
     // Shift buffer from RAM to the GPU
     SDL_UnlockTexture(buffer);
@@ -65,7 +68,7 @@ void drawFlatTextures(Uint32* pixelArray, Player &player, int type) {
     }
 }
 
-void drawWall(Uint32* pixelArray, Player &player) {
+void drawWall(Uint32* pixelArray, Player &player, double* distanceArray) {
 
     for (int renderColumn = 0; renderColumn < RENDER_WIDTH; renderColumn++) {
 
@@ -77,6 +80,7 @@ void drawWall(Uint32* pixelArray, Player &player) {
         int tileTextureID;
         bool hitOnAxisX;
         double wallDistance = dda(player.pos, columnDirection, tileTextureID, hitOnAxisX);
+        distanceArray[renderColumn] = wallDistance;
         // the cos value is needed to remove the fisheye effect
         double columnAngleDifference = abs(degreeToRad(columnAngle));
         double wallDistanceNoFishEye =  wallDistance * cos(columnAngleDifference);
@@ -128,6 +132,9 @@ void drawWall(Uint32* pixelArray, Player &player) {
             pixelArray[pixel * RENDER_WIDTH + renderColumn] = color.b + (color.g << 8) + (color.r << 16) + (255 << 24);
         }
     }
+}
+
+void drawSprites(Uint32 *pixelArray, Player &player, double *distanceArray) {
 }
 
 void applyShadow(Pixel &color) {
