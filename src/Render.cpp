@@ -23,8 +23,9 @@ int draw3dSpace(SDL_Texture* buffer, Player &player) {
 void drawFloor(Uint32* pixelArray, Player &player) {
 
     for (int renderRow = 0; renderRow < RENDER_HEIGHT/2; renderRow++) {
-        // calculate the view angle of camera to the row in the ceiling
-        double angle = 50 * (renderRow / double(RENDER_HEIGHT/2)) + 40;
+        // calculate the view angle of camera to the row in the ceiling using the FOV and aspect ratio of the screen
+        // (60/16)* 9 / 2 = 17
+        double angle = 17 * (renderRow / double(RENDER_HEIGHT/2)) + 73;
 
         // the distance from the player to the current row, where 0.5 is the height of the player in the world space
         double distanceToRow = tan(degreeToRad(angle)) * 0.5;
@@ -68,34 +69,6 @@ void drawFloor(Uint32* pixelArray, Player &player) {
     }
 }
 
-void drawCeiling(Uint32* pixelArray, Player &player) {
-
-    for (int renderRow = 0; renderRow < RENDER_HEIGHT/2; renderRow++) {
-
-        /* the row is a line in front of the player that is orthogonal to the player.dir,
-         * the length of the line depends on the distance and FOV */
-        double rowScale = double(RENDER_HEIGHT/2) / (double(RENDER_HEIGHT/2) / renderRow);
-        vd2D rowPosition;
-        // the vector is scaled to go from the middle all the way to the right of the screen
-        vd2D rowDirection = {player.dir.y * rowScale, -player.dir.x * rowScale};
-        rowPosition.x = player.pos.x + player.dir.x * (renderRow/double(RENDER_HEIGHT/2));
-        rowPosition.y = player.pos.y + player.dir.y * (renderRow/double(RENDER_HEIGHT/2));
-
-        for (int pixel = 0; pixel < RENDER_WIDTH; pixel++) {
-            Pixel color = {255,255,255};
-            // number between -1 and 1, representing a position the row
-            double pixelToScale = (pixel - double(RENDER_WIDTH/2)) / double(RENDER_WIDTH/2);
-            vd2D textureCoordinate;
-            textureCoordinate.x = rowPosition.x + rowDirection.x * pixelToScale;
-            textureCoordinate.y = rowPosition.y + rowDirection.y * pixelToScale;
-            //int tileTextureID = getTileInfo(FLOOR,{(int)textureCoordinate.x - 1, (int)textureCoordinate.y - 1});
-            //getTextureColor(1, textureCoordinate.x, textureCoordinate.y, color);
-
-            pixelArray[pixel + RENDER_WIDTH * renderRow] = color.b + (color.g << 8) + (color.r << 16) + (255 << 24) ;
-        }
-    }
-}
-
 void drawWall(Uint32* pixelArray, Player &player) {
 
     for (int renderColumn = 0; renderColumn < RENDER_WIDTH; renderColumn++) {
@@ -126,7 +99,7 @@ void drawWall(Uint32* pixelArray, Player &player) {
         }
 
         // making the height of wall proportional to the screen height, while respecting the FOV
-        double wallHeight = RENDER_HEIGHT / wallDistanceNoFishEye * 0.5;
+        double wallHeight = RENDER_HEIGHT / wallDistanceNoFishEye * 1.67;
         //double wallHeight = RENDER_HEIGHT / wallDistanceNoFishEye;
         // Prevent from drawing outside the renderer
         int distanceToHeight;
@@ -157,7 +130,7 @@ void drawWall(Uint32* pixelArray, Player &player) {
 
             /* modify the corresponding pixel in the buffer
                by modifying the Uint32, where 8 bits stand for one color channel*/
-            pixelArray[pixel * RENDER_WIDTH + renderColumn] = color.r + (color.g << 8) + (color.b << 16) + (255 << 24) ;
+            pixelArray[pixel * RENDER_WIDTH + renderColumn] = color.r + (color.g << 8) + (color.b << 16) + (255 << 24);
         }
     }
 }
