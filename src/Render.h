@@ -8,8 +8,7 @@
 #include <SDL3/SDL_render.h>
 
 int draw3dSpace(SDL_Texture* pixelArray, Player &player);
-void drawCeiling(Uint32* pixelArray, Player &player);
-void drawFloor(Uint32* pixelArray, Player &player);
+void drawFlatTextures(Uint32* pixelArray, Player &player, int type);
 void drawWall(Uint32* pixelArray, Player &player);
 void applyShadow(Pixel &color);
 int drawMiniMap(SDL_Renderer* renderer, Player &player);

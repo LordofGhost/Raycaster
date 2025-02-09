@@ -11,7 +11,8 @@ int draw3dSpace(SDL_Texture* buffer, Player &player) {
     // memory layout: FF(alpha) FF(red) FF(green) FF(blue)
     Uint32* pixelArray = (Uint32*)pixels;
 
-    drawFloor(pixelArray, player);
+    drawFlatTextures(pixelArray, player, CEILING);
+    drawFlatTextures(pixelArray, player, FLOOR);
     drawWall(pixelArray, player);
 
     // Shift buffer from RAM to the GPU
@@ -20,7 +21,7 @@ int draw3dSpace(SDL_Texture* buffer, Player &player) {
     return 1;
 }
 
-void drawFloor(Uint32* pixelArray, Player &player) {
+void drawFlatTextures(Uint32* pixelArray, Player &player, int type) {
 
     for (int renderRow = 0; renderRow < RENDER_HEIGHT/2; renderRow++) {
         // calculate the view angle of camera to the row in the ceiling using the FOV and aspect ratio of the screen
@@ -55,7 +56,11 @@ void drawFloor(Uint32* pixelArray, Player &player) {
 
             getTextureColor(tileTextureID, textureCoordinate, color);
 
-            pixelArray[pixel + RENDER_WIDTH * RENDER_HEIGHT - (RENDER_WIDTH * renderRow)] = color.b + (color.g << 8) + (color.r << 16) + (255 << 24);
+            if (type == FLOOR) {
+                pixelArray[pixel + RENDER_WIDTH * RENDER_HEIGHT - (RENDER_WIDTH * renderRow)] = color.b + (color.g << 8) + (color.r << 16) + (255 << 24);
+            } else if (type == CEILING) {
+                pixelArray[pixel + RENDER_WIDTH * renderRow] = color.b + (color.g << 8) + (color.r << 16) + (255 << 24);
+            }
         }
     }
 }
