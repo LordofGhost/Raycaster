@@ -2,6 +2,7 @@
 
 This is a simple raycaster game made in C++ using the SDL3 library.
 
+![Preview](https://github.com/user-attachments/assets/ce55cb0c-57e7-4f2f-b098-b0f3c2570de2)
 
 [Video Demo](https://imgur.com/gallery/raycaster-AnBy9D4)
 
